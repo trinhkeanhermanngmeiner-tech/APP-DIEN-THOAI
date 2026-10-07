@@ -6,7 +6,8 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 ROOT=$(pwd); T=$ROOT/.tools; OUT=$ROOT/build; DIST=$ROOT/../dist
-VERSION_CODE=${VERSION_CODE:-3}; VERSION_NAME=${VERSION_NAME:-1.2}; API=36
+# Tên phiên bản giữ 1.0; mã phiên bản (VERSION_CODE) vẫn phải tăng mỗi lần phát hành để Android/Google Play cho cập nhật.
+VERSION_CODE=${VERSION_CODE:-4}; VERSION_NAME=${VERSION_NAME:-1.0}; API=36
 
 mkdir -p "$T"
 fetch() { # url tên-tệp

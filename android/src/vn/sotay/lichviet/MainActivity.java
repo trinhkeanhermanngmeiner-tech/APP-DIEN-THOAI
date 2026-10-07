@@ -147,12 +147,13 @@ public class MainActivity extends Activity {
             w.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                     | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
         }
-        setBarIcons(false, true);
     }
 
     /** Màu biểu tượng trên thanh trạng thái / thanh điều hướng: tối khi nền sáng, sáng khi nền tối. */
     @SuppressWarnings("deprecation")
     private void setBarIcons(boolean statusLight, boolean navLight) {
+        // Chỉ gọi sau setContentView: trước đó khung cửa sổ (DecorView) chưa có, getInsetsController() sẽ lỗi.
+        getWindow().getDecorView();
         if (Build.VERSION.SDK_INT >= 30) {
             WindowInsetsController c = getWindow().getInsetsController();
             if (c == null) return;

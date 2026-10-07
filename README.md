@@ -29,4 +29,8 @@ KEYSTORE=/duong/dan/upload.p12 KEYSTORE_PASS=... android/build.sh   # ký bằng
 ```
 Không cần Android Studio; script tự tải aapt2, dx, apksig, bundletool và android.jar.
 
+Kiểm tra mở app trên Android 8 → 16 (Robolectric): `android/test/run.sh` (chạy sau `build.sh`).
+
+Phiên bản: tên phiên bản luôn để **1.0**; mã phiên bản (`VERSION_CODE` trong `android/build.sh`) tăng mỗi lần phát hành để máy và Google Play nhận bản cập nhật.
+
 > Tệp `index.html` ở thư mục gốc là ứng dụng *Anesthesia Assist* (hỗ trợ gây mê hồi sức), độc lập với Sổ Tay Lịch Việt.
