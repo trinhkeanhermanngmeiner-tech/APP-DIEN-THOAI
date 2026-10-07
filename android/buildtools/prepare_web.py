@@ -10,6 +10,7 @@ SUBSETS = ("vietnamese", "latin-ext", "latin")
 css = []
 for face, weights in FACES.items():
     pkg = fonts_root / face / "package"
+    shutil.copy(pkg / "LICENSE", out / "fonts" / f"{face}-OFL.txt")
     for w in weights:
         text = (pkg / f"{w}.css").read_text(encoding="utf-8")
         for block in re.findall(r"/\*[^*]*\*/\s*@font-face\s*{[^}]*}", text):

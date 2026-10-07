@@ -1,3 +1,4 @@
+/* Sổ Tay Lịch Việt · © 2026 BS. Trịnh Kế An (bstrinhkean@gmail.com). Mọi quyền được bảo lưu. */
 package vn.sotay.lichviet;
 
 import android.app.AlarmManager;
@@ -9,7 +10,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.Build;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -109,14 +109,7 @@ public class Reminders extends BroadcastReceiver {
                 PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
         AlarmManager am = c.getSystemService(AlarmManager.class);
         if (am == null) return;
-        try {
-            if (Build.VERSION.SDK_INT >= 31 && !am.canScheduleExactAlarms()) {
-                am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi);
-            } else {
-                am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi);
-            }
-        } catch (SecurityException e) {
-            am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi);
-        }
+        // Báo thức không cần chính xác tới từng phút nên không dùng quyền báo thức chính xác (bị CH Play hạn chế).
+        am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi);
     }
 }

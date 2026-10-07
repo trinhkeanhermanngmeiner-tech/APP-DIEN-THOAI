@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Sổ Tay Lịch Việt</title>
+<meta name="author" content="BS. Trịnh Kế An">
+<!-- Sổ Tay Lịch Việt · © 2026 BS. Trịnh Kế An (bstrinhkean@gmail.com). Mọi quyền được bảo lưu. -->
 <meta name="theme-color" content="#B3201B">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -289,26 +291,112 @@ textarea.in{min-height:200px;resize:vertical;line-height:1.55}
 
 <script>
 "use strict";
-/* ================= LỊCH ÂM (thuật toán Hồ Ngọc Đức, múi giờ +7) ================= */
-const TZ = 7, PI = Math.PI;
-function jdFromDate(dd, mm, yy){const a=Math.floor((14-mm)/12),y=yy+4800-a,m=mm+12*a-3;let jd=dd+Math.floor((153*m+2)/5)+365*y+Math.floor(y/4)-Math.floor(y/100)+Math.floor(y/400)-32045;if(jd<2299161)jd=dd+Math.floor((153*m+2)/5)+365*y+Math.floor(y/4)-32083;return jd}
-function jdToDate(jd){let a,b,c;if(jd>2299160){a=jd+32044;b=Math.floor((4*a+3)/146097);c=a-Math.floor(b*146097/4)}else{b=0;c=jd+32082}const d=Math.floor((4*c+3)/1461),e=c-Math.floor(1461*d/4),m=Math.floor((5*e+2)/153);return[e-Math.floor((153*m+2)/5)+1,m+3-12*Math.floor(m/10),b*100+d-4800+Math.floor(m/10)]}
-function newMoon(k){const T=k/1236.85,T2=T*T,T3=T2*T,dr=PI/180;let Jd1=2415020.75933+29.53058868*k+0.0001178*T2-0.000000155*T3;Jd1+=0.00033*Math.sin((166.56+132.87*T-0.009173*T2)*dr);const M=359.2242+29.10535608*k-0.0000333*T2-0.00000347*T3,Mpr=306.0253+385.81691806*k+0.0107306*T2+0.00001236*T3,F=21.2964+390.67050646*k-0.0016528*T2-0.00000239*T3;let C1=(0.1734-0.000393*T)*Math.sin(M*dr)+0.0021*Math.sin(2*dr*M);C1=C1-0.4068*Math.sin(Mpr*dr)+0.0161*Math.sin(dr*2*Mpr);C1-=0.0004*Math.sin(dr*3*Mpr);C1=C1+0.0104*Math.sin(dr*2*F)-0.0051*Math.sin(dr*(M+Mpr));C1=C1-0.0074*Math.sin(dr*(M-Mpr))+0.0004*Math.sin(dr*(2*F+M));C1=C1-0.0004*Math.sin(dr*(2*F-M))-0.0006*Math.sin(dr*(2*F+Mpr));C1=C1+0.0010*Math.sin(dr*(2*F-Mpr))+0.0005*Math.sin(dr*(2*Mpr+M));const deltat=T<-11?0.001+0.000839*T+0.0002261*T2-0.00000845*T3-0.000000081*T*T3:-0.000278+0.000265*T+0.000262*T2;return Jd1+C1-deltat}
-function sunLongitude(jdn){const T=(jdn-2451545.0)/36525,T2=T*T,dr=PI/180,M=357.52910+35999.05030*T-0.0001559*T2-0.00000048*T*T2,L0=280.46645+36000.76983*T+0.0003032*T2;let DL=(1.914600-0.004817*T-0.000014*T2)*Math.sin(dr*M);DL=DL+(0.019993-0.000101*T)*Math.sin(dr*2*M)+0.000290*Math.sin(dr*3*M);let L=(L0+DL)*dr;L-=PI*2*Math.floor(L/(PI*2));return L}
-const getSunLong=(d)=>Math.floor(sunLongitude(d-0.5-TZ/24)/PI*6);
-const getNewMoonDay=(k)=>Math.floor(newMoon(k)+0.5+TZ/24);
-function getLunarMonth11(yy){const off=jdFromDate(31,12,yy)-2415021,k=Math.floor(off/29.530588853);let nm=getNewMoonDay(k);if(getSunLong(nm)>=9)nm=getNewMoonDay(k-1);return nm}
-function getLeapMonthOffset(a11){const k=Math.floor((a11-2415021.076998695)/29.530588853+0.5);let last,i=1,arc=getSunLong(getNewMoonDay(k+i));do{last=arc;i++;arc=getSunLong(getNewMoonDay(k+i))}while(arc!==last&&i<14);return i-1}
-const lunarCache=new Map();
-function lunarOfJd(jd){
-  if(lunarCache.has(jd))return lunarCache.get(jd);
-  const yy=jdToDate(jd)[2];const k=Math.floor((jd-2415021.076998695)/29.530588853);let monthStart=getNewMoonDay(k+1);if(monthStart>jd)monthStart=getNewMoonDay(k);
-  let a11=getLunarMonth11(yy),b11=a11,ly;if(a11>=monthStart){ly=yy;a11=getLunarMonth11(yy-1)}else{ly=yy+1;b11=getLunarMonth11(yy+1)}
-  const ld=jd-monthStart+1,diff=Math.floor((monthStart-a11)/29);let leap=0,lm=diff+11;
-  if(b11-a11>365){const lmd=getLeapMonthOffset(a11);if(diff>=lmd){lm=diff+10;if(diff===lmd)leap=1}}
-  if(lm>12)lm-=12;if(lm>=11&&diff<4)ly-=1;
-  const r={d:ld,m:lm,y:ly,leap};lunarCache.set(jd,r);return r}
-function lunarToJd(ld,lm,ly,leap){let a11,b11;if(lm<11){a11=getLunarMonth11(ly-1);b11=getLunarMonth11(ly)}else{a11=getLunarMonth11(ly);b11=getLunarMonth11(ly+1)}const k=Math.floor(0.5+(a11-2415021.076998695)/29.530588853);let off=lm-11;if(off<0)off+=12;if(b11-a11>365){const leapOff=getLeapMonthOffset(a11);let leapM=leapOff-2;if(leapM<0)leapM+=12;if(leap&&lm!==leapM)return 0;if(leap||off>=leapOff)off+=1}return getNewMoonDay(k+off)+ld-1}
+/* ================= LỊCH ÂM — bộ tính riêng của ứng dụng =================
+   Viết mới dựa trên các công thức thiên văn đã công bố trong "Astronomical Algorithms" (Jean Meeus, 1998):
+   thời điểm sóc (trăng mới, chương 49), kinh độ biểu kiến của Mặt Trời (chương 25), ΔT theo đa thức Espenak–Meeus.
+   Quy tắc âm lịch Việt Nam: giờ UTC+7; tháng chứa Đông chí là tháng 11; năm có 13 tháng thì tháng nhuận là
+   tháng đầu tiên sau tháng 11 không chứa trung khí (kinh độ Mặt Trời là bội số của 30°). */
+const PI = Math.PI, VN_UTC = 7, DEG = PI / 180, SYNODIC = 29.530588861;
+/* Số ngày Julius (JDN) của ngày dương lịch, dựa trên Date.UTC của JavaScript. */
+function jdFromDate(d, m, y) { return Math.floor(Date.UTC(y, m - 1, d) / 86400000) + 2440588; }
+function jdToDate(jd) { const t = new Date((jd - 2440588) * 86400000); return [t.getUTCDate(), t.getUTCMonth() + 1, t.getUTCFullYear()]; }
+/* ΔT = TT − UT (giây), đa thức Espenak–Meeus. */
+function deltaT(year) {
+  const y = year, p = (t, c) => c.reduceRight((s, v) => s * t + v, 0);
+  if (y < 1860) return p(y - 1800, [13.72, -0.332447, 0.0068612, 0.0041116, -0.00037436, 0.0000121272, -0.0000001699, 0.000000000875]);
+  if (y < 1900) return p(y - 1860, [7.62, 0.5737, -0.251754, 0.01680668, -0.0004473624, 1 / 233174]);
+  if (y < 1920) return p(y - 1900, [-2.79, 1.494119, -0.0598939, 0.0061966, -0.000197]);
+  if (y < 1941) return p(y - 1920, [21.20, 0.84493, -0.0761, 0.0020936]);
+  if (y < 1961) return p(y - 1950, [29.07, 0.407, -1 / 233, 1 / 2547]);
+  if (y < 1986) return p(y - 1975, [45.45, 1.067, -1 / 260, -1 / 718]);
+  if (y < 2005) return p(y - 2000, [63.86, 0.3345, -0.060374, 0.0017275, 0.000651814, 0.00002373599]);
+  if (y < 2050) return p(y - 2000, [62.92, 0.32217, 0.005589]);
+  const u = (y - 1820) / 100;
+  return y < 2150 ? -20 + 32 * u * u - 0.5628 * (2150 - y) : -20 + 32 * u * u;
+}
+const ttToUt = jde => jde - deltaT(2000 + (jde - 2451545) / 365.25) / 86400;
+/* Thời điểm sóc thứ k tính từ sóc 6/1/2000 (JDE, giờ TT) — Meeus chương 49. */
+function newMoonJDE(k) {
+  const T = k / 1236.85, T2 = T * T, T3 = T2 * T, T4 = T3 * T;
+  let jde = 2451550.09766 + SYNODIC * k + 0.00015437 * T2 - 0.00000015 * T3 + 0.00000000073 * T4;
+  const E = 1 - 0.002516 * T - 0.0000074 * T2;
+  const M = (2.5534 + 29.1053567 * k - 0.0000014 * T2 - 0.00000011 * T3) * DEG;
+  const Mp = (201.5643 + 385.81693528 * k + 0.0107582 * T2 + 0.00001238 * T3 - 0.000000058 * T4) * DEG;
+  const F = (160.7108 + 390.67050284 * k - 0.0016118 * T2 - 0.00000227 * T3 + 0.000000011 * T4) * DEG;
+  const Om = (124.7746 - 1.56375588 * k + 0.0020672 * T2 + 0.00000215 * T3) * DEG;
+  const s = Math.sin;
+  jde += -0.4072 * s(Mp) + 0.17241 * E * s(M) + 0.01608 * s(2 * Mp) + 0.01039 * s(2 * F)
+    + 0.00739 * E * s(Mp - M) - 0.00514 * E * s(Mp + M) + 0.00208 * E * E * s(2 * M)
+    - 0.00111 * s(Mp - 2 * F) - 0.00057 * s(Mp + 2 * F) + 0.00056 * E * s(2 * Mp + M)
+    - 0.00042 * s(3 * Mp) + 0.00042 * E * s(M + 2 * F) + 0.00038 * E * s(M - 2 * F)
+    - 0.00024 * E * s(2 * Mp - M) - 0.00017 * s(Om) - 0.00007 * s(Mp + 2 * M)
+    + 0.00004 * s(2 * Mp - 2 * F) + 0.00004 * s(3 * M) + 0.00003 * s(Mp + M - 2 * F)
+    + 0.00003 * s(2 * Mp + 2 * F) - 0.00003 * s(Mp + M + 2 * F) + 0.00003 * s(Mp - M + 2 * F)
+    - 0.00002 * s(Mp - M - 2 * F) - 0.00002 * s(3 * Mp + M) + 0.00002 * s(4 * Mp);
+  const A = [[0.000325, 299.77, 0.107408, -0.009173], [0.000165, 251.88, 0.016321], [0.000164, 251.83, 26.651886],
+    [0.000126, 349.42, 36.412478], [0.00011, 84.66, 18.206239], [0.000062, 141.74, 53.303771], [0.00006, 207.14, 2.453732],
+    [0.000056, 154.84, 7.30686], [0.000047, 34.52, 27.261239], [0.000042, 207.19, 0.121824], [0.00004, 291.34, 1.844379],
+    [0.000037, 161.72, 24.198154], [0.000035, 239.56, 25.513099], [0.000023, 331.55, 3.592518]];
+  for (const [c, a0, a1, a2 = 0] of A) jde += c * s((a0 + a1 * k + a2 * T2) * DEG);
+  return jde;
+}
+/* Ngày (JDN theo giờ Việt Nam) của sóc thứ k. */
+const newMoonDay = k => Math.floor(ttToUt(newMoonJDE(k)) + 0.5 + VN_UTC / 24);
+/* Kinh độ biểu kiến của Mặt Trời (độ, 0–360) lúc 0 giờ (giờ Việt Nam) của ngày JDN — Meeus chương 25. */
+function sunLongitudeAtDayStart(jdn) {
+  const jdUT = jdn - 0.5 - VN_UTC / 24, jde = jdUT + deltaT(2000 + (jdUT - 2451545) / 365.25) / 86400;
+  const T = (jde - 2451545) / 36525;
+  const L0 = 280.46646 + 36000.76983 * T + 0.0003032 * T * T;
+  const M = (357.52911 + 35999.05029 * T - 0.0001537 * T * T) * DEG;
+  const C = (1.914602 - 0.004817 * T - 0.000014 * T * T) * Math.sin(M) + (0.019993 - 0.000101 * T) * Math.sin(2 * M) + 0.000289 * Math.sin(3 * M);
+  const lambda = L0 + C - 0.00569 - 0.00478 * Math.sin((125.04 - 1934.136 * T) * DEG);
+  return ((lambda % 360) + 360) % 360;
+}
+/* Chỉ số k của sóc rơi vào (hoặc ngay trước) ngày JDN. */
+function newMoonIndexOnOrBefore(jdn) {
+  let k = Math.floor((jdn - 2451550.1) / SYNODIC);
+  while (newMoonDay(k + 1) <= jdn) k++;
+  while (newMoonDay(k) > jdn) k--;
+  return k;
+}
+/* Ngày Đông chí (kinh độ Mặt Trời qua 270°) của năm dương lịch y, theo giờ Việt Nam. */
+function winterSolsticeDay(y) {
+  for (let d = jdFromDate(18, 12, y); ; d++) if (sunLongitudeAtDayStart(d + 1) >= 270) return d;
+}
+/* Một "chu kỳ" gồm các tháng âm từ tháng 11 năm Y0 đến trước tháng 11 năm sau, có đánh số và tháng nhuận. */
+const cycleCache = new Map();
+function lunarCycle(Y0) {
+  if (cycleCache.has(Y0)) return cycleCache.get(Y0);
+  const k0 = newMoonIndexOnOrBefore(winterSolsticeDay(Y0)), k1 = newMoonIndexOnOrBefore(winterSolsticeDay(Y0 + 1));
+  const starts = []; for (let k = k0; k <= k1; k++) starts.push(newMoonDay(k));
+  const count = starts.length - 1; let leapAt = -1;
+  if (count === 13) for (let i = 1; i < 13; i++) {
+    if (Math.floor(sunLongitudeAtDayStart(starts[i]) / 30) === Math.floor(sunLongitudeAtDayStart(starts[i + 1]) / 30)) { leapAt = i; break; }
+  }
+  const months = []; let firstMonth1 = -1;
+  for (let i = 0; i < count; i++) {
+    const shift = leapAt >= 0 && i >= leapAt ? 1 : 0, num = ((10 + i - shift) % 12) + 1, leap = i === leapAt ? 1 : 0;
+    if (num === 1 && !leap && firstMonth1 < 0) firstMonth1 = i;
+    months.push({ start: starts[i], end: starts[i + 1], m: num, leap, y: 0 });
+  }
+  months.forEach((mo, i) => { mo.y = i < firstMonth1 ? Y0 : Y0 + 1; });
+  const c = { start: starts[0], end: starts[count], months }; cycleCache.set(Y0, c); return c;
+}
+const lunarCache = new Map();
+/* Ngày dương (JDN) → ngày âm {d, m, y, leap}. */
+function lunarOfJd(jd) {
+  if (lunarCache.has(jd)) return lunarCache.get(jd);
+  const y = jdToDate(jd)[2]; let c = lunarCycle(y);
+  if (jd < c.start) c = lunarCycle(y - 1);
+  const mo = c.months.find(x => jd >= x.start && jd < x.end);
+  const r = { d: jd - mo.start + 1, m: mo.m, y: mo.y, leap: mo.leap }; lunarCache.set(jd, r); return r;
+}
+/* Ngày âm → JDN; trả về 0 nếu tháng (nhuận) đó không có. */
+function lunarToJd(ld, lm, ly, leap) {
+  const c = lunarCycle(lm >= 11 ? ly : ly - 1);
+  const mo = c.months.find(x => x.m === lm && x.leap === (leap ? 1 : 0) && x.y === ly);
+  return mo ? mo.start + ld - 1 : 0;
+}
 /* Ngày âm cố định mỗi năm; tháng thiếu không có ngày 30 thì lấy ngày 29 (cách làm giỗ phổ biến). */
 function lunarJdClamp(ld,lm,ly){for(let d=ld;d>=28;d--){const jd=lunarToJd(d,lm,ly,0);const b=lunarOfJd(jd);if(b.m===lm&&b.d===d&&!b.leap)return jd}return lunarToJd(Math.min(ld,28),lm,ly,0)}
 function solarJdSafe(d,m,y){if(m===2&&d===29&&!(y%4===0&&(y%100!==0||y%400===0)))d=28;return jdFromDate(d,m,y)}
@@ -374,6 +462,7 @@ const KIND_LABEL={birthday:"Sinh nhật",death:"Đám giỗ",anniv:"Kỷ niệm"
 const KIND_AB={hol:"Lễ",month:"Âm",once:"Hẹn"};
 const CATS_OUT=["Ăn uống","Đi chợ","Đi lại","Nhà cửa","Hóa đơn","Mua sắm","Sức khỏe","Học hành","Hiếu hỷ","Con cái","Giải trí","Khác"];
 const CATS_IN=["Lương","Thưởng","Bán hàng","Được cho","Khác"];
+const APP_VERSION="1.2",AUTHOR="BS. Trịnh Kế An",AUTHOR_EMAIL="bstrinhkean@gmail.com";
 const DEFAULT_SETTINGS={showHolidays:true,monthly:true,budget:0,notifyHour:7};
 
 const Store={
@@ -536,7 +625,7 @@ function renderCal(){
   </div></div>`;
 }
 function convResult(){const d=+UI.cvD,m=+UI.cvM,y=+(UI.cvY||UI.calY);if(!d||!m||!y||m>12||d>31||y<1800||y>2199)return"Nhập ngày, tháng, năm để đổi.";
-  if(UI.conv==="l"){if(d>30)return"Tháng âm có tối đa 30 ngày.";const jd=lunarToJd(d,m,y,0),b=lunarOfJd(jd);if(b.d!==d||b.m!==m)return`Tháng ${m} âm năm ${y} không có ngày ${d} (tháng thiếu).`;return`<b>${WD[weekday(jd)]}, ${fmtDate(jd)}</b> dương lịch`}
+  if(UI.conv==="l"){if(d>30)return"Tháng âm có tối đa 30 ngày.";const jd=lunarToJd(d,m,y,0);if(!jd)return"Không có tháng này.";const b=lunarOfJd(jd);if(b.d!==d||b.m!==m)return`Tháng ${m} âm năm ${y} không có ngày ${d} (tháng thiếu).`;return`<b>${WD[weekday(jd)]}, ${fmtDate(jd)}</b> dương lịch`}
   const jd=jdFromDate(d,m,y),[dd,mm]=jdToDate(jd);if(dd!==d||mm!==m)return"Ngày dương không hợp lệ.";const l=lunarOfJd(jd);return`<b>Ngày ${l.d} tháng ${LMONTH[l.m]}${l.leap?" nhuận":""}</b> năm ${canChiYear(l.y)} (${WD[weekday(jd)]})`}
 
 /* ---------- Nhắc ngày ---------- */
@@ -738,7 +827,7 @@ function reminderList(){const t=todayJd(),out=[];
   return out}
 let lastSync="";
 function syncNative(){if(!NATIVE)return;try{
-  const color=getComputedStyle($("#app")).getPropertyValue("--hero").trim();if(NATIVE.setBarColor&&color)NATIVE.setBarColor(color);
+  const color=getComputedStyle($("#app")).getPropertyValue("--hero").trim();if(NATIVE.setBarColor&&color)NATIVE.setBarColor(color);const bg=getComputedStyle(document.body).backgroundColor;if(NATIVE.setNavColor&&bg)NATIVE.setNavColor(bg);
   const json=JSON.stringify(reminderList()),key=json+"|"+Store.settings.notifyHour;if(key!==lastSync&&NATIVE.setReminders){lastSync=key;NATIVE.setReminders(json,Store.settings.notifyHour|0)}}catch(e){}}
 /* Nút Quay lại của Android */
 window.sotayBack=function(){if(!$("#scrim").hidden){closeSheet();return true}if(UI.tab!=="home"){goTab("home");return true}return false};
@@ -755,11 +844,19 @@ function settingsSheet(){
    <label class="toggle"><span>Nhắc mùng 1 và rằm</span><input type="checkbox" id="sMon" ${Store.settings.monthly?"checked":""}></label>
    <div class="field"><span class="lab">Sao lưu</span><div class="actions"><button class="btn" id="bkOut">Xuất sao lưu</button><button class="btn ghost" id="bkIn">Nhập sao lưu</button></div></div>
    <div id="bkArea"></div>
-   ${NATIVE?"":`<button class="btn ghost block" data-act="ics">Xuất sang Lịch điện thoại (.ics)</button>`}`,root=>{
+   ${NATIVE?"":`<button class="btn ghost block" data-act="ics">Xuất sang Lịch điện thoại (.ics)</button>`}
+   <div class="card about"><div class="sec"><h2>Giới thiệu</h2><span class="muted small">Phiên bản ${APP_VERSION}</span></div>
+     <p style="margin:8px 0 2px"><b>Sổ Tay Lịch Việt</b> · Tác giả: <b>${AUTHOR}</b></p>
+     <p class="hint">Liên hệ, góp ý: <span id="abEmail" style="user-select:all;color:var(--ink);font-weight:600">${AUTHOR_EMAIL}</span> <button class="lnk" id="abCopy" type="button">Sao chép</button></p>
+     <p class="hint" style="margin-top:8px">© 2026 ${AUTHOR}. Mọi quyền được bảo lưu.</p>
+     <p class="hint" style="margin-top:8px">Quyền riêng tư: app không thu thập, không gửi dữ liệu của bạn đi đâu. Mọi ghi chú, chi tiêu, ngày nhớ chỉ lưu trên máy của bạn${NATIVE?"":" hoặc trong tài khoản của bạn"}.</p>
+     <p class="hint" style="margin-top:8px">Âm lịch tính theo giờ Việt Nam (UTC+7), dựa trên công thức thiên văn trong sách <i>Astronomical Algorithms</i> của Jean Meeus. Phông chữ Be Vietnam Pro và Bricolage Grotesque dùng theo giấy phép SIL Open Font License 1.1.</p>
+   </div>`,root=>{
     wireSegs(root,(id,v)=>{if(id==="thm"){if(v==="auto")delete document.documentElement.dataset.theme;else document.documentElement.dataset.theme=v;lsSet("sotay.theme",v);syncNative()}});
     root.querySelector("#sHol").onchange=e=>Store.setSettings({showHolidays:e.target.checked});
     root.querySelector("#sMon").onchange=e=>Store.setSettings({monthly:e.target.checked});
     const hr=root.querySelector("#sHour");if(hr)hr.onchange=e=>{Store.setSettings({notifyHour:+e.target.value});toast("Sẽ báo lúc "+pad(+e.target.value)+":00 mỗi ngày")};
+    root.querySelector("#abCopy").onclick=()=>{const ok=()=>toast("Đã sao chép địa chỉ email"),sel=()=>{const r=document.createRange();r.selectNodeContents(root.querySelector("#abEmail"));const g=getSelection();g.removeAllRanges();g.addRange(r);toast("Hãy bấm giữ để sao chép")};if(navigator.clipboard)navigator.clipboard.writeText(AUTHOR_EMAIL).then(ok,sel);else sel()};
     const ts=root.querySelector("#sTest");if(ts)ts.onclick=()=>{try{NATIVE.testNotify()}catch(e){}};
     root.querySelector("#bkOut").onclick=async()=>{const txt=backupJSON(),d=new Date();const ok=await offerFile(`so-tay-sao-luu-${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}.json`,txt,"application/json");
       if(!ok){root.querySelector("#bkArea").innerHTML=`<textarea class="in" readonly id="bkTxt" style="min-height:120px;font-size:12px">${esc(txt)}</textarea><button class="btn block" id="bkCopy" style="margin-top:8px">Sao chép</button>`;root.querySelector("#bkCopy").onclick=()=>copyText(root.querySelector("#bkTxt"))}};

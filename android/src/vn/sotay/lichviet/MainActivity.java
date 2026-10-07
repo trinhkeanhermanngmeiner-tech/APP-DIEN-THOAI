@@ -1,3 +1,4 @@
+/* Sổ Tay Lịch Việt · © 2026 BS. Trịnh Kế An (bstrinhkean@gmail.com). Mọi quyền được bảo lưu. */
 package vn.sotay.lichviet;
 
 import android.Manifest;
@@ -11,6 +12,11 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowInsets;
+import android.view.WindowInsetsController;
 import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
@@ -18,6 +24,9 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.LinearLayout;
+import android.window.OnBackInvokedCallback;
+import android.window.OnBackInvokedDispatcher;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -30,14 +39,48 @@ public class MainActivity extends Activity {
     private static final int REQ_FILE = 41;
     private static final int REQ_NOTIFY = 42;
     private WebView web;
+    private View statusSpacer, navSpacer;
     private ValueCallback<Uri[]> fileCallback;
 
     @Override
     protected void onCreate(Bundle state) {
         super.onCreate(state);
+        setupEdgeToEdge();
+
+        LinearLayout root = new LinearLayout(this);
+        root.setOrientation(LinearLayout.VERTICAL);
+        statusSpacer = new View(this);
+        statusSpacer.setBackgroundColor(Color.parseColor("#B3201B"));
+        navSpacer = new View(this);
+        navSpacer.setBackgroundColor(Color.parseColor("#EFEFEC"));
         web = new WebView(this);
         web.setBackgroundColor(Color.parseColor("#B3201B"));
-        setContentView(web);
+        root.addView(statusSpacer, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0));
+        root.addView(web, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f));
+        root.addView(navSpacer, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0));
+        // Ứng dụng vẽ tràn viền; hai dải đệm có màu theo giao diện thay cho thanh trạng thái và thanh điều hướng.
+        root.setOnApplyWindowInsetsListener(new View.OnApplyWindowInsetsListener() {
+            @Override
+            public WindowInsets onApplyWindowInsets(View v, WindowInsets insets) {
+                int top, bottom;
+                if (Build.VERSION.SDK_INT >= 30) {
+                    android.graphics.Insets bars = insets.getInsets(WindowInsets.Type.systemBars() | WindowInsets.Type.displayCutout());
+                    android.graphics.Insets ime = insets.getInsets(WindowInsets.Type.ime());
+                    top = bars.top;
+                    bottom = Math.max(bars.bottom, ime.bottom);
+                    v.setPadding(bars.left, 0, bars.right, 0);
+                } else {
+                    top = insets.getSystemWindowInsetTop();
+                    bottom = insets.getSystemWindowInsetBottom();
+                    v.setPadding(insets.getSystemWindowInsetLeft(), 0, insets.getSystemWindowInsetRight(), 0);
+                }
+                setHeight(statusSpacer, top);
+                setHeight(navSpacer, bottom);
+                return Build.VERSION.SDK_INT >= 30 ? WindowInsets.CONSUMED : insets.consumeSystemWindowInsets();
+            }
+        });
+        setContentView(root);
+        setBarIcons(false, true);
 
         WebSettings s = web.getSettings();
         s.setJavaScriptEnabled(true);
@@ -76,12 +119,96 @@ public class MainActivity extends Activity {
         if (state != null) web.restoreState(state);
         else web.loadUrl("file:///android_asset/www/index.html");
 
-        if (Build.VERSION.SDK_INT >= 33
-                && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, REQ_NOTIFY);
+        if (Build.VERSION.SDK_INT >= 33) {
+            // Android 13+ (và bắt buộc từ Android 16): nút/cử chỉ Quay lại đi qua OnBackInvokedCallback.
+            getOnBackInvokedDispatcher().registerOnBackInvokedCallback(OnBackInvokedDispatcher.PRIORITY_DEFAULT,
+                    new OnBackInvokedCallback() {
+                        @Override
+                        public void onBackInvoked() {
+                            handleBack();
+                        }
+                    });
+            if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, REQ_NOTIFY);
+            }
         }
         Reminders.createChannel(this);
         Reminders.scheduleNext(this);
+    }
+
+    @SuppressWarnings("deprecation")
+    private void setupEdgeToEdge() {
+        Window w = getWindow();
+        w.setStatusBarColor(Color.TRANSPARENT);
+        w.setNavigationBarColor(Color.TRANSPARENT);
+        if (Build.VERSION.SDK_INT >= 30) {
+            w.setDecorFitsSystemWindows(false);
+        } else {
+            w.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                    | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
+        }
+        setBarIcons(false, true);
+    }
+
+    /** Màu biểu tượng trên thanh trạng thái / thanh điều hướng: tối khi nền sáng, sáng khi nền tối. */
+    @SuppressWarnings("deprecation")
+    private void setBarIcons(boolean statusLight, boolean navLight) {
+        if (Build.VERSION.SDK_INT >= 30) {
+            WindowInsetsController c = getWindow().getInsetsController();
+            if (c == null) return;
+            c.setSystemBarsAppearance(
+                    (statusLight ? WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS : 0)
+                            | (navLight ? WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS : 0),
+                    WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS | WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS);
+        } else {
+            View d = getWindow().getDecorView();
+            int f = d.getSystemUiVisibility() & ~(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR | View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR);
+            if (statusLight) f |= View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+            if (navLight && Build.VERSION.SDK_INT >= 27) f |= View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
+            d.setSystemUiVisibility(f);
+        }
+    }
+
+    private static void setHeight(View v, int h) {
+        ViewGroup.LayoutParams p = v.getLayoutParams();
+        if (p.height != h) {
+            p.height = h;
+            v.setLayoutParams(p);
+        }
+    }
+
+    /** Đọc màu CSS dạng #rrggbb hoặc rgb(r, g, b). */
+    private static Integer parseCssColor(String css) {
+        if (css == null) return null;
+        String s = css.trim();
+        try {
+            if (s.startsWith("#")) return Color.parseColor(s);
+            if (s.startsWith("rgb")) {
+                String[] p = s.substring(s.indexOf('(') + 1, s.indexOf(')')).split(",");
+                return Color.rgb(Integer.parseInt(p[0].trim()), Integer.parseInt(p[1].trim()), Integer.parseInt(p[2].trim()));
+            }
+        } catch (Exception ignored) {
+        }
+        return null;
+    }
+
+    private static boolean isLight(int c) {
+        return (0.299 * Color.red(c) + 0.587 * Color.green(c) + 0.114 * Color.blue(c)) > 160;
+    }
+
+    private void handleBack() {
+        web.evaluateJavascript("window.sotayBack?String(window.sotayBack()):'false'", new ValueCallback<String>() {
+            @Override
+            public void onReceiveValue(String v) {
+                if (!"\"true\"".equals(v)) finish();
+            }
+        });
+    }
+
+    @Override
+    @SuppressWarnings("deprecation")
+    public void onBackPressed() {
+        handleBack();
     }
 
     @Override
@@ -99,16 +226,6 @@ public class MainActivity extends Activity {
             fileCallback.onReceiveValue(result);
             fileCallback = null;
         }
-    }
-
-    @Override
-    public void onBackPressed() {
-        web.evaluateJavascript("window.sotayBack?String(window.sotayBack()):'false'", new ValueCallback<String>() {
-            @Override
-            public void onReceiveValue(String v) {
-                if (!"\"true\"".equals(v)) finish();
-            }
-        });
     }
 
     private File dataFile() {
@@ -158,11 +275,27 @@ public class MainActivity extends Activity {
         }
 
         @JavascriptInterface
-        public void setBarColor(final String hex) {
+        public void setBarColor(final String css) {
+            final Integer c = parseCssColor(css);
+            if (c == null) return;
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    try { getWindow().setStatusBarColor(Color.parseColor(hex.trim())); } catch (Exception ignored) { }
+                    statusSpacer.setBackgroundColor(c);
+                    web.setBackgroundColor(c);
+                }
+            });
+        }
+
+        @JavascriptInterface
+        public void setNavColor(final String css) {
+            final Integer c = parseCssColor(css);
+            if (c == null) return;
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    navSpacer.setBackgroundColor(c);
+                    setBarIcons(false, isLight(c));
                 }
             });
         }
