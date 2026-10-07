@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sổ Tay Lịch Việt</title>
+<meta name="theme-color" content="#C8322B">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Sổ Tay">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Oswald:wght@500;600;700&display=swap">
+<style>
+/* Layout: một màn hình kiểu ứng dụng — đầu trang, nội dung cuộn, thanh tab dưới. Trang "Hôm nay" mô phỏng tờ lịch xé. */
+:root{
+  --bg:#EEF0EC; --surface:#FFFFFF; --surface2:#F5F6F3; --ink:#1B211F; --muted:#66706B; --line:#DCE0DA;
+  --red:#C8322B; --red-soft:#FBE9E7; --jade:#1F6F5C; --jade-soft:#E2F0EB; --gold:#9A6E12; --gold-soft:#F7EFD9;
+  --shadow:0 1px 2px rgba(20,30,25,.06),0 4px 14px rgba(20,30,25,.06);
+  --f-display:"Oswald","Arial Narrow",Impact,sans-serif;
+  --f-body:"Be Vietnam Pro",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#111513; --surface:#1A1F1D; --surface2:#222826; --ink:#E6EAE7; --muted:#97A29C; --line:#2E3532;
+  --red:#F0675E; --red-soft:#3A1F1D; --jade:#4CB59A; --jade-soft:#17322B; --gold:#D9AE52; --gold-soft:#332A17;
+  --shadow:0 1px 2px rgba(0,0,0,.4); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#111513; --surface:#1A1F1D; --surface2:#222826; --ink:#E6EAE7; --muted:#97A29C; --line:#2E3532;
+  --red:#F0675E; --red-soft:#3A1F1D; --jade:#4CB59A; --jade-soft:#17322B; --gold:#D9AE52; --gold-soft:#332A17;
+  --shadow:0 1px 2px rgba(0,0,0,.4); color-scheme:dark}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--f-body);-webkit-tap-highlight-color:transparent}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--jade);outline-offset:2px}
+[hidden]{display:none!important}
+.app{max-width:560px;margin:0 auto;height:100%;display:flex;flex-direction:column}
+header.top{display:flex;align-items:center;gap:12px;padding:14px 16px 8px}
+header.top h1{font:600 22px/1.2 var(--f-display);letter-spacing:.02em;margin:0;flex:1;text-transform:uppercase}
+.mode{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.mode i{width:8px;height:8px;border-radius:50%;background:var(--gold);display:inline-block}
+.mode.sync i{background:var(--jade)}
+.iconbtn{width:40px;height:40px;border-radius:12px;border:1px solid var(--line);background:var(--surface);display:grid;place-items:center;flex:none}
+.iconbtn svg{width:20px;height:20px}
+main{flex:1;overflow-y:auto;padding:4px 16px 24px;-webkit-overflow-scrolling:touch}
+section.view{display:flex;flex-direction:column;gap:16px}
+nav.tabs{display:grid;grid-template-columns:repeat(5,1fr);background:var(--surface);border-top:1px solid var(--line);padding:6px 4px calc(6px + env(safe-area-inset-bottom,0px))}
+nav.tabs button{border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;color:var(--muted);padding:4px 0;border-radius:10px}
+nav.tabs button svg{width:22px;height:22px}
+nav.tabs button[aria-current="page"]{color:var(--red);font-weight:600}
+h2{font:600 13px/1.3 var(--f-body);text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0}
+.rowh{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.card{background:var(--surface);border-radius:16px;box-shadow:var(--shadow);padding:14px}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+.num{font-variant-numeric:tabular-nums}
+
+/* Tờ lịch xé */
+.leaf{background:var(--surface);border-radius:6px 6px 16px 16px;box-shadow:var(--shadow);overflow:hidden;position:relative}
+.leaf .holes{height:18px;background:var(--red);display:flex;justify-content:center;gap:56px;align-items:center}
+.leaf .holes span{width:8px;height:8px;border-radius:50%;background:var(--bg)}
+.leaf .head{display:flex;justify-content:space-between;padding:10px 16px 0;font-weight:600;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.leaf .big{font:700 112px/1 var(--f-display);text-align:center;color:var(--ink);margin:6px 0 2px;font-variant-numeric:tabular-nums}
+.leaf .big.red{color:var(--red)}
+.leaf .wd{text-align:center;font:600 20px/1.2 var(--f-display);letter-spacing:.06em;text-transform:uppercase}
+.leaf .wd.red{color:var(--red)}
+.leaf .lunar{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;border-top:1px dashed var(--line);margin-top:14px;padding:12px 16px 14px}
+.leaf .lunar .ld{font:700 44px/1 var(--f-display);color:var(--gold);text-align:center}
+.leaf .lunar .lbl{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.leaf .lunar .val{font-weight:600;font-size:14px}
+.leaf .lunar .r{text-align:right}
+.leaf .tag{margin:0 16px 14px;padding:8px 12px;border-radius:10px;background:var(--red-soft);color:var(--red);font-weight:600;font-size:14px;text-align:center}
+
+/* danh sách */
+.list{display:flex;flex-direction:column}
+.item{display:flex;gap:12px;align-items:center;padding:11px 0;border-bottom:1px solid var(--line);min-width:0}
+.item:last-child{border-bottom:0}
+.item .txt{flex:1;min-width:0}
+.item .t{font-weight:600;overflow-wrap:anywhere}
+.item .s{font-size:13px;color:var(--muted)}
+.item button.link{all:unset;cursor:pointer;flex:1;min-width:0;display:block}
+.badge{font-size:12px;font-weight:600;padding:3px 9px;border-radius:999px;white-space:nowrap;background:var(--surface2);color:var(--muted)}
+.badge.today{background:var(--red);color:#fff}
+.badge.soon{background:var(--red-soft);color:var(--red)}
+.badge.gold{background:var(--gold-soft);color:var(--gold)}
+.dot{width:36px;height:36px;border-radius:12px;display:grid;place-items:center;flex:none;font-size:13px;font-weight:700}
+.k-birthday{background:var(--jade-soft);color:var(--jade)}
+.k-death{background:var(--gold-soft);color:var(--gold)}
+.k-anniv{background:var(--red-soft);color:var(--red)}
+.k-other,.k-once{background:var(--surface2);color:var(--muted)}
+.k-hol{background:var(--red-soft);color:var(--red)}
+.k-month{background:var(--gold-soft);color:var(--gold)}
+.empty{padding:18px 4px;text-align:center;color:var(--muted);font-size:14px}
+.alert{border-left:0;background:var(--red-soft);color:var(--ink);border-radius:16px;padding:12px 14px;display:flex;flex-direction:column;gap:6px}
+.alert b{color:var(--red)}
+
+/* nút */
+.btn{border:0;border-radius:12px;padding:10px 16px;font-weight:600;background:var(--jade);color:#fff}
+.btn.ghost{background:var(--surface2);color:var(--ink)}
+.btn.danger{background:var(--red-soft);color:var(--red)}
+.btn.block{width:100%}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 12px;font-size:13px}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.fab{position:sticky;bottom:12px;margin-left:auto;width:56px;height:56px;border-radius:18px;border:0;background:var(--red);color:#fff;box-shadow:0 6px 18px rgba(200,50,43,.35);display:grid;place-items:center}
+.fab svg{width:26px;height:26px}
+
+/* lịch tháng */
+.calhead{display:flex;align-items:center;gap:8px}
+.calhead .title{flex:1;text-align:center}
+.calhead .title b{font:600 22px/1.1 var(--f-display);text-transform:uppercase;letter-spacing:.03em;display:block}
+.calhead .title span{font-size:12px;color:var(--muted)}
+.grid7{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.grid7 .wh{text-align:center;font-size:11px;font-weight:600;color:var(--muted);padding:4px 0;text-transform:uppercase}
+.grid7 .wh.sun{color:var(--red)}
+.day{border:0;background:var(--surface);border-radius:10px;min-height:54px;padding:4px 2px;display:flex;flex-direction:column;align-items:center;gap:1px;position:relative}
+.day.out{opacity:.35}
+.day .sd{font:600 18px/1.1 var(--f-display);font-variant-numeric:tabular-nums}
+.day .lu{font-size:10px;color:var(--muted);font-variant-numeric:tabular-nums}
+.day .lu.first{color:var(--gold);font-weight:700}
+.day .lu.full{color:var(--gold);font-weight:700}
+.day.sun .sd,.day.off .sd{color:var(--red)}
+.day.today{box-shadow:inset 0 0 0 2px var(--red)}
+.day.sel{background:var(--ink)}
+.day.sel .sd,.day.sel .lu{color:var(--bg)}
+.day .dots{display:flex;gap:2px;height:5px}
+.day .dots i{width:5px;height:5px;border-radius:50%;background:var(--jade)}
+.day .dots i.h{background:var(--red)}
+.day .dots i.m{background:var(--gold)}
+
+/* chi tiêu */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stat{background:var(--surface);border-radius:14px;padding:10px 12px;box-shadow:var(--shadow);min-width:0}
+.stat .l{font-size:12px;color:var(--muted)}
+.stat .v{font:600 18px/1.3 var(--f-display);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.v.neg{color:var(--red)} .v.pos{color:var(--jade)}
+.bar{height:8px;border-radius:99px;background:var(--surface2);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--jade);border-radius:99px}
+.bar i.warn{background:var(--red)}
+.catrow{display:grid;grid-template-columns:110px 1fr auto;gap:10px;align-items:center;font-size:13px;padding:4px 0}
+.amt{font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.amt.neg{color:var(--red)} .amt.pos{color:var(--jade)}
+.dayhdr{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);padding:12px 0 2px;text-transform:uppercase;letter-spacing:.05em;font-weight:600}
+
+/* ghi chú */
+.search{width:100%;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:10px 14px}
+.notes{columns:2;column-gap:10px}
+.note{break-inside:avoid;margin:0 0 10px;width:100%;text-align:left;border:0;background:var(--surface);border-radius:14px;padding:12px;box-shadow:var(--shadow);display:block}
+.note .t{font-weight:700;margin-bottom:4px;overflow-wrap:anywhere}
+.note .b{font-size:13px;color:var(--muted);white-space:pre-wrap;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:8;-webkit-box-orient:vertical;overflow:hidden}
+.note .d{font-size:11px;color:var(--muted);margin-top:8px}
+.note.pin{box-shadow:inset 0 0 0 2px var(--gold),var(--shadow)}
+
+/* bảng trượt */
+.scrim{position:fixed;inset:0;background:rgba(10,15,12,.45);display:flex;align-items:flex-end;justify-content:center;z-index:20}
+.sheet{background:var(--bg);width:100%;max-width:560px;max-height:92%;overflow-y:auto;border-radius:20px 20px 0 0;padding:10px 16px calc(20px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:14px}
+.sheet .grab{width:40px;height:4px;border-radius:9px;background:var(--line);margin:0 auto}
+.sheet h3{font:600 20px/1.2 var(--f-display);text-transform:uppercase;letter-spacing:.03em;margin:0}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label,.lab{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.in{width:100%;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:10px 12px;min-width:0}
+textarea.in{min-height:180px;resize:vertical;line-height:1.55}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.seg{display:flex;background:var(--surface2);border-radius:12px;padding:3px;gap:3px}
+.seg button{flex:1;border:0;background:none;border-radius:9px;padding:8px 4px;font-size:13px;font-weight:600;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
+.toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
+.toggle input{width:22px;height:22px;accent-color:var(--jade)}
+.hint{font-size:13px;color:var(--muted);margin:0}
+.toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:14px;z-index:30;max-width:90%;text-align:center}
+.actions{display:flex;gap:10px;flex-wrap:wrap}
+.actions .btn{flex:1}
+@media (prefers-reduced-motion:no-preference){.sheet{animation:up .22s ease-out}@keyframes up{from{transform:translateY(30px);opacity:.6}}}
+@media (max-width:360px){.leaf .big{font-size:92px}.catrow{grid-template-columns:86px 1fr auto}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <h1 id="hdTitle">Hôm nay</h1>
+    <span class="mode" id="modeTag"><i></i><span>Lưu trên máy</span></span>
+    <button class="iconbtn" id="btnSettings" aria-label="Cài đặt"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+  </header>
+  <main id="main">
+    <section class="view" id="v-home"></section>
+    <section class="view" id="v-cal" hidden></section>
+    <section class="view" id="v-events" hidden></section>
+    <section class="view" id="v-money" hidden></section>
+    <section class="view" id="v-notes" hidden></section>
+  </main>
+  <nav class="tabs" aria-label="Chuyển mục">
+    <button data-tab="home" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M4 8h16M9 14h6"/></svg>Hôm nay</button>
+    <button data-tab="cal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Lịch</button>
+    <button data-tab="events"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0"/></svg>Nhắc ngày</button>
+    <button data-tab="money"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="6" width="20" height="13" rx="2"/><circle cx="12" cy="12.5" r="2.5"/><path d="M6 6V4h12v2"/></svg>Chi tiêu</button>
+    <button data-tab="notes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></svg>Ghi chú</button>
+  </nav>
+</div>
+<div class="scrim" id="scrim" hidden><div class="sheet" id="sheet" role="dialog" aria-modal="true"></div></div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+"use strict";
+/* ================= LỊCH ÂM (thuật toán Hồ Ngọc Đức, múi giờ +7) ================= */
+const TZ = 7, PI = Math.PI;
+function jdFromDate(dd, mm, yy){const a=Math.floor((14-mm)/12),y=yy+4800-a,m=mm+12*a-3;let jd=dd+Math.floor((153*m+2)/5)+365*y+Math.floor(y/4)-Math.floor(y/100)+Math.floor(y/400)-32045;if(jd<2299161)jd=dd+Math.floor((153*m+2)/5)+365*y+Math.floor(y/4)-32083;return jd}
+function jdToDate(jd){let a,b,c;if(jd>2299160){a=jd+32044;b=Math.floor((4*a+3)/146097);c=a-Math.floor(b*146097/4)}else{b=0;c=jd+32082}const d=Math.floor((4*c+3)/1461),e=c-Math.floor(1461*d/4),m=Math.floor((5*e+2)/153);return[e-Math.floor((153*m+2)/5)+1,m+3-12*Math.floor(m/10),b*100+d-4800+Math.floor(m/10)]}
+function newMoon(k){const T=k/1236.85,T2=T*T,T3=T2*T,dr=PI/180;let Jd1=2415020.75933+29.53058868*k+0.0001178*T2-0.000000155*T3;Jd1+=0.00033*Math.sin((166.56+132.87*T-0.009173*T2)*dr);const M=359.2242+29.10535608*k-0.0000333*T2-0.00000347*T3,Mpr=306.0253+385.81691806*k+0.0107306*T2+0.00001236*T3,F=21.2964+390.67050646*k-0.0016528*T2-0.00000239*T3;let C1=(0.1734-0.000393*T)*Math.sin(M*dr)+0.0021*Math.sin(2*dr*M);C1=C1-0.4068*Math.sin(Mpr*dr)+0.0161*Math.sin(dr*2*Mpr);C1-=0.0004*Math.sin(dr*3*Mpr);C1=C1+0.0104*Math.sin(dr*2*F)-0.0051*Math.sin(dr*(M+Mpr));C1=C1-0.0074*Math.sin(dr*(M-Mpr))+0.0004*Math.sin(dr*(2*F+M));C1=C1-0.0004*Math.sin(dr*(2*F-M))-0.0006*Math.sin(dr*(2*F+Mpr));C1=C1+0.0010*Math.sin(dr*(2*F-Mpr))+0.0005*Math.sin(dr*(2*Mpr+M));const deltat=T<-11?0.001+0.000839*T+0.0002261*T2-0.00000845*T3-0.000000081*T*T3:-0.000278+0.000265*T+0.000262*T2;return Jd1+C1-deltat}
+function sunLongitude(jdn){const T=(jdn-2451545.0)/36525,T2=T*T,dr=PI/180,M=357.52910+35999.05030*T-0.0001559*T2-0.00000048*T*T2,L0=280.46645+36000.76983*T+0.0003032*T2;let DL=(1.914600-0.004817*T-0.000014*T2)*Math.sin(dr*M);DL=DL+(0.019993-0.000101*T)*Math.sin(dr*2*M)+0.000290*Math.sin(dr*3*M);let L=(L0+DL)*dr;L-=PI*2*Math.floor(L/(PI*2));return L}
+const getSunLong=(d)=>Math.floor(sunLongitude(d-0.5-TZ/24)/PI*6);
+const getNewMoonDay=(k)=>Math.floor(newMoon(k)+0.5+TZ/24);
+function getLunarMonth11(yy){const off=jdFromDate(31,12,yy)-2415021,k=Math.floor(off/29.530588853);let nm=getNewMoonDay(k);if(getSunLong(nm)>=9)nm=getNewMoonDay(k-1);return nm}
+function getLeapMonthOffset(a11){const k=Math.floor((a11-2415021.076998695)/29.530588853+0.5);let last,i=1,arc=getSunLong(getNewMoonDay(k+i));do{last=arc;i++;arc=getSunLong(getNewMoonDay(k+i))}while(arc!==last&&i<14);return i-1}
+const lunarCache=new Map();
+function lunarOfJd(jd){
+  if(lunarCache.has(jd))return lunarCache.get(jd);
+  const yy=jdToDate(jd)[2];const k=Math.floor((jd-2415021.076998695)/29.530588853);let monthStart=getNewMoonDay(k+1);if(monthStart>jd)monthStart=getNewMoonDay(k);
+  let a11=getLunarMonth11(yy),b11=a11,ly;if(a11>=monthStart){ly=yy;a11=getLunarMonth11(yy-1)}else{ly=yy+1;b11=getLunarMonth11(yy+1)}
+  const ld=jd-monthStart+1,diff=Math.floor((monthStart-a11)/29);let leap=0,lm=diff+11;
+  if(b11-a11>365){const lmd=getLeapMonthOffset(a11);if(diff>=lmd){lm=diff+10;if(diff===lmd)leap=1}}
+  if(lm>12)lm-=12;if(lm>=11&&diff<4)ly-=1;
+  const r={d:ld,m:lm,y:ly,leap};lunarCache.set(jd,r);return r}
+function lunarToJd(ld,lm,ly,leap){let a11,b11;if(lm<11){a11=getLunarMonth11(ly-1);b11=getLunarMonth11(ly)}else{a11=getLunarMonth11(ly);b11=getLunarMonth11(ly+1)}const k=Math.floor(0.5+(a11-2415021.076998695)/29.530588853);let off=lm-11;if(off<0)off+=12;if(b11-a11>365){const leapOff=getLeapMonthOffset(a11);let leapM=leapOff-2;if(leapM<0)leapM+=12;if(leap&&lm!==leapM)return 0;if(leap||off>=leapOff)off+=1}return getNewMoonDay(k+off)+ld-1}
+/* Ngày âm cố định mỗi năm; tháng thiếu không có ngày 30 thì lấy ngày 29 (cách làm giỗ phổ biến). */
+function lunarJdClamp(ld,lm,ly){for(let d=ld;d>=28;d--){const jd=lunarToJd(d,lm,ly,0);const b=lunarOfJd(jd);if(b.m===lm&&b.d===d&&!b.leap)return jd}return lunarToJd(Math.min(ld,28),lm,ly,0)}
+function solarJdSafe(d,m,y){if(m===2&&d===29&&!(y%4===0&&(y%100!==0||y%400===0)))d=28;return jdFromDate(d,m,y)}
+const CAN=["Giáp","Ất","Bính","Đinh","Mậu","Kỷ","Canh","Tân","Nhâm","Quý"],CHI=["Tý","Sửu","Dần","Mão","Thìn","Tỵ","Ngọ","Mùi","Thân","Dậu","Tuất","Hợi"];
+const canChiYear=y=>CAN[(y+6)%10]+" "+CHI[(y+8)%12];
+const canChiDay=jd=>CAN[(jd+9)%10]+" "+CHI[(jd+1)%12];
+const canChiMonth=(m,y)=>CAN[(y*12+m+3)%10]+" "+CHI[(m+1)%12];
+const LMONTH=["","Giêng","Hai","Ba","Tư","Năm","Sáu","Bảy","Tám","Chín","Mười","Mười Một","Chạp"];
+const WD=["Chủ Nhật","Thứ Hai","Thứ Ba","Thứ Tư","Thứ Năm","Thứ Sáu","Thứ Bảy"];
+const weekday=jd=>(jd+1)%7; // 0 = Chủ nhật
+
+/* ================= TIỆN ÍCH ================= */
+const $=s=>document.querySelector(s);
+const pad=n=>String(n).padStart(2,"0");
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const todayJd=()=>{const t=new Date();return jdFromDate(t.getDate(),t.getMonth()+1,t.getFullYear())};
+const jdKey=jd=>{const[d,m,y]=jdToDate(jd);return y+"-"+pad(m)+"-"+pad(d)};
+const keyJd=k=>{const[y,m,d]=k.split("-").map(Number);return jdFromDate(d,m,y)};
+const fmtDate=jd=>{const[d,m,y]=jdToDate(jd);return pad(d)+"/"+pad(m)+"/"+y};
+const fmtShort=jd=>{const[d,m]=jdToDate(jd);return pad(d)+"/"+pad(m)};
+const fmtLunar=jd=>{const l=lunarOfJd(jd);return l.d+"/"+l.m+(l.leap?" nhuận":"")+" âm"};
+const money=n=>(Math.round(n)||0).toLocaleString("vi-VN")+" ₫";
+const moneyShort=n=>{const a=Math.abs(n);if(a>=1e9)return(n/1e9).toLocaleString("vi-VN",{maximumFractionDigits:1})+" tỷ";if(a>=1e6)return(n/1e6).toLocaleString("vi-VN",{maximumFractionDigits:1})+" tr";if(a>=1e3)return Math.round(n/1e3).toLocaleString("vi-VN")+"k";return String(Math.round(n))};
+function parseAmount(s){s=String(s).trim().toLowerCase().replace(/\s/g,"");if(!s)return 0;let mult=1;if(/(tr|m|triệu)$/.test(s)){mult=1e6;s=s.replace(/(tr|m|triệu)$/,"")}else if(/(k|ng|nghìn|ngàn)$/.test(s)){mult=1e3;s=s.replace(/(k|ng|nghìn|ngàn)$/,"")}
+  if(mult>1)s=s.replace(",",".");else s=s.replace(/[.,]/g,"");const v=parseFloat(s);return isFinite(v)?Math.round(v*mult):0}
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+function relDays(n){if(n===0)return"Hôm nay";if(n===1)return"Ngày mai";if(n===2)return"Ngày kia";return"Còn "+n+" ngày"}
+let toastT;function toast(msg){const t=$("#toast");t.textContent=msg;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,2600)}
+const lsGet=k=>{try{return localStorage.getItem(k)}catch(e){return null}};
+const lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
+
+/* ================= DỮ LIỆU ================= */
+const HOLIDAYS=[
+ {k:"s",d:1,m:1,t:"Tết Dương lịch",off:1},{k:"s",d:3,m:2,t:"Thành lập Đảng CSVN"},{k:"s",d:14,m:2,t:"Lễ Tình nhân (Valentine)"},
+ {k:"s",d:27,m:2,t:"Ngày Thầy thuốc Việt Nam"},{k:"s",d:8,m:3,t:"Quốc tế Phụ nữ"},{k:"s",d:26,m:3,t:"Thành lập Đoàn TNCS HCM"},
+ {k:"s",d:30,m:4,t:"Ngày Giải phóng miền Nam",off:1},{k:"s",d:1,m:5,t:"Quốc tế Lao động",off:1},{k:"s",d:19,m:5,t:"Ngày sinh Chủ tịch Hồ Chí Minh"},
+ {k:"s",d:1,m:6,t:"Quốc tế Thiếu nhi"},{k:"s",d:28,m:6,t:"Ngày Gia đình Việt Nam"},{k:"s",d:27,m:7,t:"Ngày Thương binh Liệt sĩ"},
+ {k:"s",d:19,m:8,t:"Cách mạng tháng Tám"},{k:"s",d:2,m:9,t:"Quốc khánh",off:1},{k:"s",d:13,m:10,t:"Ngày Doanh nhân Việt Nam"},
+ {k:"s",d:20,m:10,t:"Ngày Phụ nữ Việt Nam"},{k:"s",d:20,m:11,t:"Ngày Nhà giáo Việt Nam"},{k:"s",d:22,m:12,t:"Thành lập QĐND Việt Nam"},
+ {k:"s",d:24,m:12,t:"Đêm Giáng sinh"},{k:"s",d:25,m:12,t:"Lễ Giáng sinh"},
+ {k:"l",d:1,m:1,t:"Tết Nguyên Đán (Mùng 1)",off:1},{k:"l",d:2,m:1,t:"Mùng 2 Tết",off:1},{k:"l",d:3,m:1,t:"Mùng 3 Tết",off:1},
+ {k:"l",d:15,m:1,t:"Rằm tháng Giêng (Nguyên Tiêu)"},{k:"l",d:3,m:3,t:"Tết Hàn thực"},{k:"l",d:10,m:3,t:"Giỗ Tổ Hùng Vương",off:1},
+ {k:"l",d:15,m:4,t:"Lễ Phật Đản"},{k:"l",d:5,m:5,t:"Tết Đoan Ngọ"},{k:"l",d:15,m:7,t:"Lễ Vu Lan"},
+ {k:"l",d:15,m:8,t:"Tết Trung Thu"},{k:"l",d:9,m:9,t:"Tết Trùng Cửu"},{k:"l",d:23,m:12,t:"Ông Công Ông Táo"},
+ {k:"l",d:30,m:12,t:"Giao thừa (Tất niên)",off:1}
+];
+const EV_TYPES={birthday:{n:"Sinh nhật",ab:"SN"},death:{n:"Đám giỗ",ab:"Giỗ"},anniv:{n:"Kỷ niệm",ab:"KN"},other:{n:"Khác",ab:"•"}};
+const CATS_OUT=["Ăn uống","Đi chợ","Đi lại","Nhà cửa","Hóa đơn","Mua sắm","Sức khỏe","Học hành","Hiếu hỷ","Con cái","Giải trí","Khác"];
+const CATS_IN=["Lương","Thưởng","Bán hàng","Được cho","Khác"];
+const DEFAULT_SETTINGS={showHolidays:true,monthly:true,budget:0};
+
+const Store={
+  mode:"local", data:{notes:{},events:{},txns:{}}, settings:{...DEFAULT_SETTINGS}, db:null, base:null,
+  loadLocal(){try{const raw=lsGet("sotay.v1");if(raw){const o=JSON.parse(raw);this.data={notes:o.data?.notes||{},events:o.data?.events||{},txns:o.data?.txns||{}};this.settings={...DEFAULT_SETTINGS,...(o.settings||{})}}}catch(e){}},
+  saveLocal(){lsSet("sotay.v1",JSON.stringify({data:this.data,settings:this.settings}))},
+  async initCloud(){
+    if(!window.claude||!window.claude.use)return;
+    try{
+      const[db,user]=await Promise.all([window.claude.use("db"),window.claude.use("user")]);
+      if(!db||!user)return;const id=await user.id();if(!id)return;
+      this.db=db;this.base=db.doc("data/users/"+id+"/app");this.mode="db";
+      this.data={notes:{},events:{},txns:{}};this.loaded=0;render();
+      for(const kind of["notes","events","txns"]){
+        this.base.collection(kind).onSnapshot(snap=>{const o={};snap.docs.forEach(d=>{o[d.id]=d.data()});this.data[kind]=o;if(!snap.metadata.fromCache)this.loaded|=1;scheduleRender()},()=>{});
+      }
+      db.doc("data/users/"+id+"/settings").onSnapshot(s=>{if(s.exists){this.settings={...DEFAULT_SETTINGS,...s.data()};scheduleRender()}},()=>{});
+      this.settingsRef=db.doc("data/users/"+id+"/settings");
+    }catch(e){this.mode="local";this.loadLocal()}
+    renderMode();
+  },
+  fallback(e){if(this.mode!=="db")return;this.mode="local";this.saveLocal();renderMode();toast("Không lưu được vào tài khoản. Đã chuyển sang lưu trên máy này.")},
+  put(kind,item){this.data[kind]={...this.data[kind],[item.id]:item};scheduleRender();
+    if(this.mode==="db")this.base.collection(kind).doc(item.id).set(JSON.parse(JSON.stringify(item))).catch(e=>{if(e&&e.code==="quota_exceeded")toast("Bộ nhớ đã đầy. Hãy xóa bớt mục cũ.");else this.fallback(e)});else this.saveLocal()},
+  del(kind,id){const o={...this.data[kind]};delete o[id];this.data[kind]=o;scheduleRender();
+    if(this.mode==="db")this.base.collection(kind).doc(id).delete().catch(e=>this.fallback(e));else this.saveLocal()},
+  setSettings(patch){this.settings={...this.settings,...patch};scheduleRender();
+    if(this.mode==="db")this.settingsRef.set({...this.settings}).catch(e=>this.fallback(e));else this.saveLocal()},
+  list(kind){return Object.values(this.data[kind]||{})}
+};
+
+/* ================= TÍNH NGÀY SỰ KIỆN ================= */
+function evTitle(ev,occJd){
+  const l=lunarOfJd(occJd),[,,sy]=jdToDate(occJd);const yrNow=ev.cal==="l"?l.y:sy;const n=ev.y?yrNow-ev.y:null;
+  if(ev.repeat==="once")return ev.name;
+  if(ev.type==="birthday")return"Sinh nhật "+ev.name+(n>0?" · "+n+" tuổi":"");
+  if(ev.type==="death")return"Giỗ "+ev.name+(n>0?(n===1?" · giỗ đầu":" · giỗ lần thứ "+n):"");
+  if(ev.type==="anniv")return ev.name+(n>0?" · "+n+" năm":"");
+  return ev.name}
+function occurrences(fromJd,toJd,opt={}){
+  const S=Store.settings,out=[],y1=jdToDate(fromJd)[2]-1,y2=jdToDate(toJd)[2]+1;
+  const add=(jd,o)=>{if(jd>=fromJd&&jd<=toJd)out.push({jd,...o})};
+  for(let y=y1;y<=y2;y++){
+    if(S.showHolidays&&!opt.noHol)for(const h of HOLIDAYS){const jd=h.k==="s"?solarJdSafe(h.d,h.m,y):lunarJdClamp(h.d,h.m,y);add(jd,{kind:"hol",title:h.t,off:!!h.off,cal:h.k})}
+    for(const ev of Store.list("events")){if(ev.repeat==="once")continue;if(ev.y&&y<ev.y)continue;
+      const jd=ev.cal==="l"?lunarJdClamp(ev.d,ev.m,y):solarJdSafe(ev.d,ev.m,y);add(jd,{kind:ev.type,ev,title:evTitle(ev,jd),cal:ev.cal})}
+  }
+  for(const ev of Store.list("events")){if(ev.repeat!=="once"||!ev.y)continue;const jd=ev.cal==="l"?lunarJdClamp(ev.d,ev.m,ev.y):jdFromDate(ev.d,ev.m,ev.y);add(jd,{kind:"once",ev,title:ev.name,cal:ev.cal})}
+  if(S.monthly&&!opt.noMonthly){for(let jd=fromJd;jd<=toJd;jd++){const l=lunarOfJd(jd);if(l.d===1&&!(S.showHolidays&&l.m===1&&!l.leap))out.push({jd,kind:"month",title:"Mùng 1 tháng "+LMONTH[l.m]+(l.leap?" nhuận":"")});if(l.d===15&&!(S.showHolidays&&[1,4,7,8].includes(l.m)&&!l.leap))out.push({jd,kind:"month",title:"Rằm tháng "+LMONTH[l.m]+(l.leap?" nhuận":"")})}}
+  return out.sort((a,b)=>a.jd-b.jd||(a.kind==="hol")-(b.kind==="hol"))}
+function nextOccurrence(ev){const t=todayJd();const o=occurrences(t,t+400,{noHol:1,noMonthly:1}).find(x=>x.ev&&x.ev.id===ev.id);return o||null}
+const KIND_AB={hol:"Lễ",month:"Âm",once:"Hẹn"};
+function kindDot(o){const ab=o.kind in EV_TYPES?EV_TYPES[o.kind].ab:KIND_AB[o.kind];return`<span class="dot k-${o.kind==="hol"?"hol":o.kind}">${esc(ab)}</span>`}
+
+/* ================= TRẠNG THÁI GIAO DIỆN ================= */
+const UI={tab:lsGet("sotay.tab")||"home",calY:0,calM:0,selJd:todayJd(),moneyY:0,moneyM:0,noteQ:"",evFilter:"all"};
+{const[,m,y]=jdToDate(todayJd());UI.calY=UI.moneyY=y;UI.calM=UI.moneyM=m}
+const TITLES={home:"Hôm nay",cal:"Lịch âm dương",events:"Nhắc ngày",money:"Chi tiêu",notes:"Ghi chú"};
+let rq=0;function scheduleRender(){if(rq)return;rq=requestAnimationFrame(()=>{rq=0;render()})}
+function render(){
+  for(const t of Object.keys(TITLES))$("#v-"+t).hidden=t!==UI.tab;
+  document.querySelectorAll("nav.tabs button").forEach(b=>b.dataset.tab===UI.tab?b.setAttribute("aria-current","page"):b.removeAttribute("aria-current"));
+  $("#hdTitle").textContent=TITLES[UI.tab];
+  ({home:renderHome,cal:renderCal,events:renderEvents,money:renderMoney,notes:renderNotes})[UI.tab]();
+}
+function renderMode(){const el=$("#modeTag");el.classList.toggle("sync",Store.mode==="db");el.querySelector("span").textContent=Store.mode==="db"?"Đồng bộ tài khoản":"Lưu trên máy"}
+document.querySelectorAll("nav.tabs button").forEach(b=>b.addEventListener("click",()=>{UI.tab=b.dataset.tab;lsSet("sotay.tab",UI.tab);$("#main").scrollTop=0;render()}));
+
+/* ---------- Hôm nay ---------- */
+function occRow(o,t){const n=o.jd-t;const remind=o.ev&&o.ev.remind!=null&&n<=o.ev.remind;
+  const badge=`<span class="badge ${n===0?"today":remind||n<=3?"soon":""}">${relDays(n)}</span>`;
+  const sub=fmtDate(o.jd)+" · "+WD[weekday(o.jd)]+(o.kind!=="month"?" · "+fmtLunar(o.jd):"");
+  const inner=`${kindDot(o)}<div class="txt"><div class="t">${esc(o.title)}</div><div class="s">${sub}</div></div>${badge}`;
+  return o.ev?`<div class="item"><button class="link" data-ev="${o.ev.id}" style="display:flex;gap:12px;align-items:center">${inner}</button></div>`:`<div class="item">${inner}</div>`}
+function renderHome(){
+  const t=todayJd(),[d,m,y]=jdToDate(t),l=lunarOfJd(t),wd=weekday(t);
+  const todays=occurrences(t,t);const off=todays.some(o=>o.off);const red=wd===0||off;
+  const upcoming=occurrences(t+1,t+45).filter(o=>o.kind!=="month"||o.jd-t<=16);
+  const alerts=occurrences(t,t+30,{noHol:1,noMonthly:1}).filter(o=>o.ev&&o.jd-t<=(o.ev.remind??0));
+  const [mo,mi]=monthTotals(y,m);
+  const pinned=Store.list("notes").filter(n=>n.pinned).sort((a,b)=>b.updated-a.updated).slice(0,3);
+  $("#v-home").innerHTML=`
+  <div class="leaf">
+    <div class="holes"><span></span><span></span></div>
+    <div class="head"><span>Tháng ${m} · ${y}</span><span>Năm ${canChiYear(l.y)}</span></div>
+    <div class="big ${red?"red":""}">${d}</div>
+    <div class="wd ${red?"red":""}">${WD[wd]}</div>
+    <div class="lunar">
+      <div><div class="lbl">Tháng ${LMONTH[l.m]}${l.leap?" nhuận":""}</div><div class="val">${canChiMonth(l.m,l.y)}</div></div>
+      <div class="ld">${l.d}</div>
+      <div class="r"><div class="lbl">Ngày</div><div class="val">${canChiDay(t)}</div></div>
+    </div>
+    ${todays.length?`<div class="tag">${todays.map(o=>esc(o.title)).join(" · ")}</div>`:""}
+  </div>
+  ${alerts.length?`<div class="alert"><b>Sắp đến ngày cần nhớ</b>${alerts.map(o=>`<div>${esc(o.title)}: <b>${relDays(o.jd-t).toLowerCase()}</b> (${fmtShort(o.jd)}${o.cal==="l"?", "+fmtLunar(o.jd):""})</div>`).join("")}</div>`:""}
+  <div class="card">
+    <div class="rowh"><h2>Tháng này</h2><button class="chip" data-go="money">Xem chi tiêu</button></div>
+    <div class="stats" style="margin-top:10px">
+      <div><div class="small muted">Đã chi</div><div class="v neg" style="font:600 20px var(--f-display)">${moneyShort(mo)}</div></div>
+      <div><div class="small muted">Thu</div><div class="v pos" style="font:600 20px var(--f-display)">${moneyShort(mi)}</div></div>
+      <div><div class="small muted">${Store.settings.budget?"Còn ngân sách":"Chênh lệch"}</div><div style="font:600 20px var(--f-display)">${moneyShort(Store.settings.budget?Store.settings.budget-mo:mi-mo)}</div></div>
+    </div>
+    <div class="actions" style="margin-top:12px"><button class="btn" data-act="addTxn">+ Ghi chi tiêu</button><button class="btn ghost" data-act="addNote">+ Ghi chú</button></div>
+  </div>
+  <div class="card">
+    <div class="rowh"><h2>Sắp tới · 45 ngày</h2><button class="chip" data-act="addEvent">+ Thêm ngày nhớ</button></div>
+    <div class="list">${upcoming.length?upcoming.slice(0,14).map(o=>occRow(o,t)).join(""):`<div class="empty">Chưa có ngày nào sắp tới.</div>`}</div>
+  </div>
+  ${pinned.length?`<div class="card"><h2>Ghi chú đã ghim</h2><div class="list">${pinned.map(n=>`<div class="item"><button class="link" data-note="${n.id}"><div class="t">${esc(n.title||"(Không tiêu đề)")}</div><div class="s">${esc((n.body||"").slice(0,80))}</div></button></div>`).join("")}</div></div>`:""}
+  ${Store.list("events").length?"":`<div class="card"><h2>Bắt đầu</h2><p class="hint" style="margin-top:8px">Thêm sinh nhật người thân và ngày giỗ ông bà. App tự đổi ngày âm sang dương mỗi năm và nhắc trước cho bạn.</p><div class="actions" style="margin-top:10px"><button class="btn" data-act="addEvent" data-type="birthday">+ Sinh nhật</button><button class="btn ghost" data-act="addEvent" data-type="death">+ Đám giỗ</button></div></div>`}`;
+}
+
+/* ---------- Lịch ---------- */
+function renderCal(){
+  const Y=UI.calY,M=UI.calM,first=jdFromDate(1,M,Y),dim=jdToDate(jdFromDate(1,M%12+1,M===12?Y+1:Y)-1)[0];
+  const lead=(weekday(first)+6)%7,start=first-lead,cells=Math.ceil((lead+dim)/7)*7,t=todayJd();
+  const occ=occurrences(start,start+cells-1);const by={};occ.forEach(o=>{(by[o.jd]=by[o.jd]||[]).push(o)});
+  const txByDay={};Store.list("txns").forEach(x=>{txByDay[x.date]=(txByDay[x.date]||0)+(x.kind==="out"?1:0)});
+  const lFirst=lunarOfJd(first),lLast=lunarOfJd(first+dim-1);
+  let g=["T2","T3","T4","T5","T6","T7","CN"].map((w,i)=>`<div class="wh ${i===6?"sun":""}">${w}</div>`).join("");
+  for(let i=0;i<cells;i++){const jd=start+i,[d,m]=jdToDate(jd),l=lunarOfJd(jd),os=by[jd]||[];
+    const dots=[...new Set(os.map(o=>o.kind==="hol"?"h":o.kind==="month"?"m":"e"))].slice(0,3).map(c=>`<i class="${c==="e"?"":c}"></i>`).join("");
+    g+=`<button class="day ${m!==M?"out":""} ${weekday(jd)===0?"sun":""} ${os.some(o=>o.off)?"off":""} ${jd===t?"today":""} ${jd===UI.selJd?"sel":""}" data-jd="${jd}" aria-label="${fmtDate(jd)}, ${l.d}/${l.m} âm">
+      <span class="sd">${d}</span><span class="lu ${l.d===1?"first":l.d===15?"full":""}">${l.d===1?l.d+"/"+l.m:l.d}</span><span class="dots">${dots}</span></button>`}
+  const s=UI.selJd,sl=lunarOfJd(s),so=by[s]||occurrences(s,s),skey=jdKey(s);
+  const stx=Store.list("txns").filter(x=>x.date===skey);
+  $("#v-cal").innerHTML=`
+  <div class="calhead">
+    <button class="iconbtn" data-cal="-1" aria-label="Tháng trước"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
+    <div class="title"><b>Tháng ${M} / ${Y}</b><span>Âm lịch: ${lFirst.d}/${lFirst.m} – ${lLast.d}/${lLast.m} · năm ${canChiYear(lLast.y)}</span></div>
+    <button class="iconbtn" data-cal="1" aria-label="Tháng sau"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></button>
+  </div>
+  <div class="grid7" id="calGrid">${g}</div>
+  <div class="chips"><button class="chip" data-cal="today">Về hôm nay</button><span class="small muted" style="align-self:center">Chấm đỏ: ngày lễ · xanh: ngày nhớ · vàng: mùng 1, rằm</span></div>
+  <div class="card">
+    <div class="rowh"><div><div style="font:600 20px var(--f-display)">${WD[weekday(s)]}, ${fmtDate(s)}</div>
+      <div class="small muted">Ngày ${sl.d} tháng ${LMONTH[sl.m]}${sl.leap?" (nhuận)":""} năm ${canChiYear(sl.y)} · ngày ${canChiDay(s)}, tháng ${canChiMonth(sl.m,sl.y)}</div></div></div>
+    <div class="list" style="margin-top:6px">${so.length?so.map(o=>occRow(o,s).replace(/<span class="badge[^>]*>.*?<\/span>/,"")).join(""):`<div class="empty">Không có sự kiện.</div>`}
+      ${stx.map(x=>txRow(x)).join("")}</div>
+    <div class="actions" style="margin-top:10px"><button class="btn" data-act="addEvent" data-jd="${s}">+ Ngày nhớ</button><button class="btn ghost" data-act="addTxn" data-jd="${s}">+ Chi tiêu</button></div>
+  </div>
+  <div class="card" id="conv">
+    <h2>Đổi ngày âm ↔ dương</h2>
+    <div class="seg" style="margin-top:10px"><button data-conv="s" aria-pressed="${UI.conv!=="l"}">Dương → Âm</button><button data-conv="l" aria-pressed="${UI.conv==="l"}">Âm → Dương</button></div>
+    <div class="row3" style="margin-top:10px"><input class="in num" id="cvD" inputmode="numeric" placeholder="Ngày" value="${UI.cvD||""}"><input class="in num" id="cvM" inputmode="numeric" placeholder="Tháng" value="${UI.cvM||""}"><input class="in num" id="cvY" inputmode="numeric" placeholder="Năm" value="${UI.cvY||Y}"></div>
+    <p class="hint" id="cvOut" style="margin-top:10px">${convResult()}</p>
+  </div>`;
+}
+function convResult(){const d=+UI.cvD,m=+UI.cvM,y=+UI.cvY;if(!d||!m||!y||m>12||d>31||y<1800||y>2199)return"Nhập ngày, tháng, năm để đổi.";
+  if(UI.conv==="l"){if(d>30)return"Tháng âm có tối đa 30 ngày.";const jd=lunarToJd(d,m,y,0),b=lunarOfJd(jd);if(b.d!==d||b.m!==m)return`Tháng ${m} âm năm ${y} không có ngày ${d} (tháng thiếu).`;return`<b>${WD[weekday(jd)]}, ${fmtDate(jd)}</b> dương lịch`}
+  const jd=jdFromDate(d,m,y),[dd,mm]=jdToDate(jd);if(dd!==d||mm!==m)return"Ngày dương không hợp lệ.";const l=lunarOfJd(jd);return`<b>Ngày ${l.d} tháng ${LMONTH[l.m]}${l.leap?" nhuận":""}</b> năm ${canChiYear(l.y)} (${WD[weekday(jd)]})`}
+
+/* ---------- Nhắc ngày ---------- */
+function renderEvents(){
+  const t=todayJd(),evs=Store.list("events").map(ev=>({ev,next:nextOccurrence(ev)}));
+  const f=UI.evFilter,shown=evs.filter(x=>f==="all"||x.ev.type===f||(f==="other"&&x.ev.repeat==="once")).sort((a,b)=>(a.next?a.next.jd:1e9)-(b.next?b.next.jd:1e9));
+  const hols=occurrences(t,t+366,{noMonthly:1}).filter(o=>o.kind==="hol").slice(0,12);
+  $("#v-events").innerHTML=`
+  <div class="chips">${[["all","Tất cả"],["birthday","Sinh nhật"],["death","Đám giỗ"],["anniv","Kỷ niệm"],["other","Khác"]].map(([k,n])=>`<button class="chip" data-evf="${k}" aria-pressed="${f===k}">${n}</button>`).join("")}</div>
+  <div class="card"><div class="list">${shown.length?shown.map(({ev,next})=>{const n=next?next.jd-t:null;
+    const when=(ev.cal==="l"?`${ev.d}/${ev.m} âm`:`${pad(ev.d)}/${pad(ev.m)}`)+(ev.y?(ev.repeat==="once"?"/"+ev.y:" · từ "+ev.y):"")+(ev.repeat==="once"?" · một lần":" · hằng năm");
+    return`<div class="item"><button class="link" data-ev="${ev.id}" style="display:flex;gap:12px;align-items:center">${kindDot({kind:ev.repeat==="once"?"once":ev.type})}<div class="txt"><div class="t">${esc(next?next.title:ev.name)}</div><div class="s">${when}${next?" · "+fmtDate(next.jd):" · đã qua"}${ev.remind?" · nhắc trước "+ev.remind+" ngày":""}</div></div>${n!=null?`<span class="badge ${n===0?"today":n<=(ev.remind||3)?"soon":""}">${relDays(n)}</span>`:""}</button></div>`}).join(""):`<div class="empty">Chưa có ngày nào. Bấm nút + để thêm sinh nhật, ngày giỗ, kỷ niệm cưới…</div>`}</div></div>
+  <button class="fab" data-act="addEvent" aria-label="Thêm ngày nhớ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+  <div class="card">
+    <h2>Ngày lễ trong năm</h2>
+    <label class="toggle"><span>Hiện các ngày lễ, Tết Việt Nam</span><input type="checkbox" id="tgHol" ${Store.settings.showHolidays?"checked":""}></label>
+    <label class="toggle"><span>Nhắc mùng 1 và rằm hằng tháng</span><input type="checkbox" id="tgMonth" ${Store.settings.monthly?"checked":""}></label>
+    <div class="list">${Store.settings.showHolidays?hols.map(o=>occRow(o,t)).join(""):""}</div>
+  </div>
+  <div class="card"><h2>Nhắc trên điện thoại</h2><p class="hint" style="margin-top:8px">App hiện lời nhắc mỗi khi bạn mở. Để điện thoại tự báo cả khi không mở app, hãy xuất các ngày nhớ của 5 năm tới vào Lịch của máy (iPhone, Android).</p>
+    <button class="btn block" style="margin-top:10px" data-act="ics">Xuất sang Lịch điện thoại (.ics)</button></div>`;
+}
+
+/* ---------- Chi tiêu ---------- */
+function monthTotals(y,m){const pre=y+"-"+pad(m)+"-";let o=0,i=0;Store.list("txns").forEach(x=>{if(x.date.startsWith(pre)){if(x.kind==="out")o+=x.amount;else i+=x.amount}});return[o,i]}
+function txRow(x){return`<div class="item"><button class="link" data-tx="${x.id}" style="display:flex;gap:12px;align-items:center"><span class="dot ${x.kind==="out"?"k-anniv":"k-birthday"}">${esc(x.cat.slice(0,2))}</span><div class="txt"><div class="t">${esc(x.note||x.cat)}</div><div class="s">${esc(x.cat)}</div></div><span class="amt ${x.kind==="out"?"neg":"pos"}">${x.kind==="out"?"−":"+"}${money(x.amount)}</span></button></div>`}
+function renderMoney(){
+  const Y=UI.moneyY,M=UI.moneyM,pre=Y+"-"+pad(M)+"-",tx=Store.list("txns").filter(x=>x.date.startsWith(pre)).sort((a,b)=>b.date.localeCompare(a.date)||b.created-a.created);
+  const[o,i]=monthTotals(Y,M),B=Store.settings.budget||0;
+  const cats={};tx.filter(x=>x.kind==="out").forEach(x=>cats[x.cat]=(cats[x.cat]||0)+x.amount);const catArr=Object.entries(cats).sort((a,b)=>b[1]-a[1]);const maxC=catArr[0]?catArr[0][1]:1;
+  const days={};tx.forEach(x=>(days[x.date]=days[x.date]||[]).push(x));
+  const pct=B?Math.min(100,o/B*100):0;
+  $("#v-money").innerHTML=`
+  <div class="calhead">
+    <button class="iconbtn" data-mon="-1" aria-label="Tháng trước"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
+    <div class="title"><b>Tháng ${M} / ${Y}</b><span>${tx.length} khoản</span></div>
+    <button class="iconbtn" data-mon="1" aria-label="Tháng sau"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></button>
+  </div>
+  <div class="stats">
+    <div class="stat"><div class="l">Chi</div><div class="v neg">${moneyShort(o)}</div></div>
+    <div class="stat"><div class="l">Thu</div><div class="v pos">${moneyShort(i)}</div></div>
+    <div class="stat"><div class="l">Còn lại</div><div class="v">${moneyShort(i-o)}</div></div>
+  </div>
+  <div class="card">
+    <div class="rowh"><h2>Ngân sách tháng</h2><button class="chip" data-act="budget">${B?"Sửa":"Đặt ngân sách"}</button></div>
+    ${B?`<div class="bar" style="margin-top:10px"><i class="${pct>=90?"warn":""}" style="width:${pct}%"></i></div><p class="hint" style="margin-top:6px">Đã dùng ${money(o)} / ${money(B)} (${Math.round(o/B*100)}%)${o>B?" · <b style='color:var(--red)'>vượt "+money(o-B)+"</b>":""}</p>`:`<p class="hint" style="margin-top:6px">Đặt mức chi tối đa mỗi tháng để app cảnh báo khi sắp vượt.</p>`}
+  </div>
+  ${catArr.length?`<div class="card"><h2>Chi theo nhóm</h2><div style="margin-top:8px">${catArr.map(([c,v])=>`<div class="catrow"><span>${esc(c)}</span><div class="bar"><i style="width:${v/maxC*100}%"></i></div><span class="amt">${moneyShort(v)}</span></div>`).join("")}</div></div>`:""}
+  <div class="card">${tx.length?Object.keys(days).map(k=>{const jd=keyJd(k),sum=days[k].reduce((s,x)=>s+(x.kind==="out"?-x.amount:x.amount),0);return`<div class="dayhdr"><span>${WD[weekday(jd)]} ${fmtShort(jd)} · ${fmtLunar(jd)}</span><span class="num">${sum<0?"−":"+"}${money(Math.abs(sum))}</span></div><div class="list">${days[k].map(txRow).join("")}</div>`}).join(""):`<div class="empty">Chưa có khoản nào trong tháng này. Bấm + để ghi khoản đầu tiên.</div>`}</div>
+  <button class="fab" data-act="addTxn" aria-label="Ghi chi tiêu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>`;
+}
+
+/* ---------- Ghi chú ---------- */
+function renderNotes(){
+  const q=UI.noteQ.trim().toLowerCase();
+  const notes=Store.list("notes").filter(n=>!q||(n.title+" "+n.body).toLowerCase().includes(q)).sort((a,b)=>(b.pinned?1:0)-(a.pinned?1:0)||b.updated-a.updated);
+  const v=$("#v-notes");
+  if(!v.querySelector("#noteQ")){v.innerHTML=`<input class="search" id="noteQ" type="search" placeholder="Tìm ghi chú…" aria-label="Tìm ghi chú"><div id="noteList"></div><button class="fab" data-act="addNote" aria-label="Ghi chú mới"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>`;
+    v.querySelector("#noteQ").addEventListener("input",e=>{UI.noteQ=e.target.value;renderNotes()})}
+  $("#noteList").innerHTML=notes.length?`<div class="notes">${notes.map(n=>{const d=new Date(n.updated);return`<button class="note ${n.pinned?"pin":""}" data-note="${n.id}">${n.title?`<div class="t">${esc(n.title)}</div>`:""}<div class="b">${esc(n.body)}</div><div class="d">${n.pinned?"📌 ":""}${pad(d.getDate())}/${pad(d.getMonth()+1)} ${pad(d.getHours())}:${pad(d.getMinutes())}</div></button>`}).join("")}</div>`:`<div class="empty">${q?"Không tìm thấy ghi chú phù hợp.":"Chưa có ghi chú. Bấm + để viết ghi chú đầu tiên: danh sách đi chợ, việc cần làm, số điện thoại…"}</div>`;
+}
+
+/* ================= BẢNG NHẬP (sheet) ================= */
+function openSheet(html,onMount){$("#sheet").innerHTML=`<div class="grab"></div>`+html;$("#scrim").hidden=false;onMount&&onMount($("#sheet"))}
+function closeSheet(){const s=$("#sheet");if(s._onClose){const f=s._onClose;s._onClose=null;f()}$("#scrim").hidden=true;$("#sheet").innerHTML=""}
+$("#scrim").addEventListener("click",e=>{if(e.target.id==="scrim")closeSheet()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("#scrim").hidden)closeSheet()});
+function segHTML(id,opts,val){return`<div class="seg" id="${id}">${opts.map(([k,n])=>`<button type="button" data-v="${k}" aria-pressed="${k===val}">${n}</button>`).join("")}</div>`}
+function segVal(root,id){return root.querySelector("#"+id+" [aria-pressed=true]").dataset.v}
+function wireSegs(root,cb){root.querySelectorAll(".seg").forEach(s=>s.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;s.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x===b));cb&&cb(s.id,b.dataset.v)}))}
+function confirmBtn(btn,fn){btn.addEventListener("click",()=>{if(btn.dataset.armed){fn()}else{btn.dataset.armed=1;btn.textContent="Bấm lần nữa để xóa";setTimeout(()=>{if(btn.isConnected){delete btn.dataset.armed;btn.textContent="Xóa"}},3000)}})}
+
+function eventSheet(ev,presetJd,presetType){
+  const isNew=!ev;let e=ev||{id:uid(),name:"",type:presetType||"birthday",cal:"s",d:"",m:"",y:"",repeat:"year",remind:3,note:""};
+  if(isNew&&presetJd){const[d,m,y]=jdToDate(presetJd);e={...e,d,m,y:e.type==="birthday"?"":y};if(e.type==="death"){const l=lunarOfJd(presetJd);e.cal="l";e.d=l.d;e.m=l.m}}
+  if(isNew&&e.type==="death")e.cal="l";
+  openSheet(`<h3>${isNew?"Thêm ngày nhớ":"Sửa ngày nhớ"}</h3>
+  <form id="evForm" style="display:flex;flex-direction:column;gap:14px">
+   <div class="field"><span class="lab">Loại</span>${segHTML("evType",[["birthday","Sinh nhật"],["death","Đám giỗ"],["anniv","Kỷ niệm"],["other","Khác"]],e.type)}</div>
+   <div class="field"><label for="evName" id="evNameL">Tên người / sự kiện</label><input class="in" id="evName" required value="${esc(e.name)}" placeholder="Ví dụ: Mẹ, Ông nội, Ngày cưới"></div>
+   <div class="field"><span class="lab">Theo lịch</span>${segHTML("evCal",[["s","Dương lịch"],["l","Âm lịch"]],e.cal)}</div>
+   <div class="row3"><div class="field"><label for="evD">Ngày</label><input class="in num" id="evD" inputmode="numeric" required value="${e.d}"></div><div class="field"><label for="evM">Tháng</label><input class="in num" id="evM" inputmode="numeric" required value="${e.m}"></div><div class="field"><label for="evY" id="evYL">Năm</label><input class="in num" id="evY" inputmode="numeric" value="${e.y||""}" placeholder="không bắt buộc"></div></div>
+   <p class="hint" id="evPreview"></p>
+   <div class="field"><span class="lab">Lặp lại</span>${segHTML("evRep",[["year","Hằng năm"],["once","Một lần"]],e.repeat)}</div>
+   <div class="field"><label for="evRem">Nhắc trước</label><select class="in" id="evRem">${[0,1,2,3,5,7,10,14,30].map(n=>`<option value="${n}" ${n==(e.remind??3)?"selected":""}>${n?n+" ngày":"Đúng ngày"}</option>`).join("")}</select></div>
+   <div class="field"><label for="evNote">Ghi chú</label><input class="in" id="evNote" value="${esc(e.note||"")}" placeholder="Ví dụ: chuẩn bị mâm cỗ, mua quà"></div>
+   <div class="actions"><button class="btn" type="submit">Lưu</button>${isNew?"":`<button class="btn danger" type="button" id="evDel">Xóa</button>`}</div>
+  </form>`,root=>{
+    const upd=()=>{const t=segVal(root,"evType"),cal=segVal(root,"evCal"),rep=segVal(root,"evRep"),d=+root.querySelector("#evD").value,m=+root.querySelector("#evM").value,y=+root.querySelector("#evY").value;
+      root.querySelector("#evYL").textContent=rep==="once"?"Năm":t==="birthday"?"Năm sinh":t==="death"?"Năm mất":"Năm bắt đầu";
+      root.querySelector("#evY").placeholder=rep==="once"?"bắt buộc":"không bắt buộc";
+      const p=root.querySelector("#evPreview");if(!d||!m||m>12||d>(cal==="l"?30:31)){p.textContent="";return}
+      const tmp={...e,type:t,cal,d,m,y:y||"",repeat:rep,id:"__tmp"};const tj=todayJd();let jd;
+      if(rep==="once"){if(!y){p.textContent="Sự kiện một lần cần có năm.";return}jd=cal==="l"?lunarJdClamp(d,m,y):jdFromDate(d,m,y)}
+      else{for(let yy=jdToDate(tj)[2]-1;yy<=jdToDate(tj)[2]+1;yy++){const j=cal==="l"?lunarJdClamp(d,m,yy):solarJdSafe(d,m,yy);if(j>=tj){jd=j;break}}}
+      p.innerHTML=jd?`Lần tới: <b>${WD[weekday(jd)]}, ${fmtDate(jd)}</b> (${fmtLunar(jd)}) · ${jd>=tj?relDays(jd-tj).toLowerCase():"đã qua"}<br>${esc(evTitle(tmp,jd))}`:""};
+    wireSegs(root,(id,v)=>{if(id==="evType"&&v==="death"&&isNew)root.querySelector("#evCal [data-v=l]").click();upd()});
+    root.querySelectorAll("input").forEach(i=>i.addEventListener("input",upd));upd();
+    root.querySelector("#evForm").addEventListener("submit",ev2=>{ev2.preventDefault();
+      const cal=segVal(root,"evCal"),rep=segVal(root,"evRep"),d=+root.querySelector("#evD").value,m=+root.querySelector("#evM").value,yv=root.querySelector("#evY").value.trim(),y=yv?+yv:"";
+      if(!d||!m||m<1||m>12||d<1||d>(cal==="l"?30:31)){toast("Ngày hoặc tháng chưa đúng.");return}
+      if(rep==="once"&&!y){toast("Sự kiện một lần cần nhập năm.");return}
+      if(y&&(y<1800||y>2199)){toast("Năm phải trong khoảng 1800–2199.");return}
+      Store.put("events",{id:e.id,name:root.querySelector("#evName").value.trim()||"Không tên",type:segVal(root,"evType"),cal,d,m,y,repeat:rep,remind:+root.querySelector("#evRem").value,note:root.querySelector("#evNote").value.trim(),created:e.created||Date.now()});
+      closeSheet();toast(isNew?"Đã thêm ngày nhớ":"Đã lưu")});
+    const del=root.querySelector("#evDel");if(del)confirmBtn(del,()=>{Store.del("events",e.id);closeSheet();toast("Đã xóa")});
+  });
+}
+
+function txnSheet(x,presetJd){
+  const isNew=!x;const t=x||{id:uid(),kind:"out",amount:"",cat:"Ăn uống",note:"",date:jdKey(presetJd||todayJd())};
+  const catsHTML=k=>(k==="out"?CATS_OUT:CATS_IN).map(c=>`<button type="button" class="chip" data-cat="${esc(c)}" aria-pressed="${c===t.cat}">${esc(c)}</button>`).join("");
+  openSheet(`<h3>${isNew?"Ghi thu chi":"Sửa khoản"}</h3>
+  <form id="txForm" style="display:flex;flex-direction:column;gap:14px">
+    ${segHTML("txKind",[["out","Khoản chi"],["in","Khoản thu"]],t.kind)}
+    <div class="field"><label for="txAmt">Số tiền</label><input class="in num" id="txAmt" inputmode="decimal" required value="${t.amount||""}" placeholder="Ví dụ: 50k, 1.5tr, 200000" style="font-size:22px;font-weight:600"><span class="hint" id="txAmtV"></span></div>
+    <div class="chips" id="txQuick">${["20k","50k","100k","200k","500k","1tr"].map(v=>`<button type="button" class="chip" data-q="${v}">${v}</button>`).join("")}</div>
+    <div class="field"><span class="lab">Nhóm</span><div class="chips" id="txCats">${catsHTML(t.kind)}</div></div>
+    <div class="field"><label for="txNote">Nội dung</label><input class="in" id="txNote" value="${esc(t.note)}" placeholder="Ví dụ: Phở sáng, tiền điện tháng 9"></div>
+    <div class="field"><label for="txDate">Ngày</label><input class="in" type="date" id="txDate" value="${t.date}"></div>
+    <div class="actions"><button class="btn" type="submit">Lưu</button>${isNew?"":`<button class="btn danger" type="button" id="txDel">Xóa</button>`}</div>
+  </form>`,root=>{
+    let cat=t.cat;const amt=root.querySelector("#txAmt"),showV=()=>{const v=parseAmount(amt.value);root.querySelector("#txAmtV").textContent=v?money(v):""};
+    amt.addEventListener("input",showV);showV();
+    root.querySelector("#txQuick").addEventListener("click",e=>{const b=e.target.closest("[data-q]");if(b){amt.value=b.dataset.q;showV()}});
+    const wireCats=()=>root.querySelector("#txCats").onclick=e=>{const b=e.target.closest("[data-cat]");if(!b)return;cat=b.dataset.cat;root.querySelectorAll("#txCats .chip").forEach(c=>c.setAttribute("aria-pressed",c===b))};wireCats();
+    wireSegs(root,(id,v)=>{const list=v==="out"?CATS_OUT:CATS_IN;if(!list.includes(cat))cat=list[0];t.cat=cat;root.querySelector("#txCats").innerHTML=catsHTML(v)});
+    root.querySelector("#txForm").addEventListener("submit",e=>{e.preventDefault();const v=parseAmount(amt.value);if(!v||v<0){toast("Nhập số tiền, ví dụ 50k hoặc 1.5tr.");return}
+      const date=root.querySelector("#txDate").value||jdKey(todayJd());
+      Store.put("txns",{id:t.id,kind:segVal(root,"txKind"),amount:v,cat,note:root.querySelector("#txNote").value.trim(),date,created:t.created||Date.now()});
+      closeSheet();toast("Đã ghi "+money(v));
+      const[y,m]=date.split("-").map(Number);if(UI.tab==="money"){UI.moneyY=y;UI.moneyM=m}
+      const B=Store.settings.budget;if(B){const[o]=monthTotals(y,m);if(o>B)setTimeout(()=>toast("Chú ý: đã vượt ngân sách tháng "+money(o-B)),1400);else if(o>B*.9)setTimeout(()=>toast("Đã dùng hơn 90% ngân sách tháng"),1400)}});
+    const del=root.querySelector("#txDel");if(del)confirmBtn(del,()=>{Store.del("txns",t.id);closeSheet();toast("Đã xóa")});
+    if(isNew)setTimeout(()=>amt.focus(),50);
+  });
+}
+
+function noteSheet(n){
+  const isNew=!n;const note=n||{id:uid(),title:"",body:"",pinned:false,updated:Date.now()};let pinned=!!note.pinned,deleted=false;
+  openSheet(`<div class="rowh"><h3>${isNew?"Ghi chú mới":"Ghi chú"}</h3><button class="chip" id="ntPin" aria-pressed="${pinned}">${pinned?"Đã ghim":"Ghim"}</button></div>
+    <input class="in" id="ntTitle" placeholder="Tiêu đề" value="${esc(note.title)}" style="font-weight:700;font-size:17px" aria-label="Tiêu đề">
+    <textarea class="in" id="ntBody" placeholder="Nội dung ghi chú…" aria-label="Nội dung">${esc(note.body)}</textarea>
+    <div class="actions"><button class="btn" id="ntDone">Xong</button>${isNew?"":`<button class="btn danger" id="ntDel">Xóa</button>`}</div>
+    <p class="hint">Ghi chú tự lưu khi bạn đóng.</p>`,root=>{
+    root.querySelector("#ntPin").addEventListener("click",e=>{pinned=!pinned;e.target.setAttribute("aria-pressed",pinned);e.target.textContent=pinned?"Đã ghim":"Ghim"});
+    root.querySelector("#ntDone").addEventListener("click",closeSheet);
+    const del=root.querySelector("#ntDel");if(del)confirmBtn(del,()=>{deleted=true;Store.del("notes",note.id);closeSheet();toast("Đã xóa ghi chú")});
+    $("#sheet")._onClose=()=>{if(deleted)return;const title=root.querySelector("#ntTitle").value.trim(),body=root.querySelector("#ntBody").value;
+      if(!title&&!body.trim()){if(!isNew)Store.del("notes",note.id);return}
+      if(isNew||title!==note.title||body!==note.body||pinned!==!!note.pinned)Store.put("notes",{id:note.id,title,body,pinned,updated:Date.now()})};
+    if(isNew)setTimeout(()=>root.querySelector("#ntBody").focus(),50);
+  });
+}
+
+function budgetSheet(){openSheet(`<h3>Ngân sách tháng</h3><div class="field"><label for="bdV">Mức chi tối đa mỗi tháng</label><input class="in num" id="bdV" inputmode="decimal" value="${Store.settings.budget||""}" placeholder="Ví dụ: 8tr"><span class="hint" id="bdH"></span></div><div class="actions"><button class="btn" id="bdSave">Lưu</button><button class="btn ghost" id="bdOff">Bỏ ngân sách</button></div>`,root=>{
+  const i=root.querySelector("#bdV"),h=()=>root.querySelector("#bdH").textContent=parseAmount(i.value)?money(parseAmount(i.value)):"";i.addEventListener("input",h);h();
+  root.querySelector("#bdSave").onclick=()=>{Store.setSettings({budget:parseAmount(i.value)});closeSheet();toast("Đã lưu ngân sách")};
+  root.querySelector("#bdOff").onclick=()=>{Store.setSettings({budget:0});closeSheet()}})}
+
+/* ================= SAO LƯU & XUẤT LỊCH ================= */
+async function offerFile(filename,text,mime){
+  if(window.claude&&window.claude.use){const dl=await window.claude.use("downloads");if(dl){try{await dl.save({filename,data:text});return true}catch(e){if(e&&e.code==="declined")return true;if(e&&e.code==="rejected_extension"){return false}}}
+    return false}
+  try{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([text],{type:mime}));a.download=filename;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000);return true}catch(e){return false}}
+function buildICS(){
+  const t=todayJd(),occ=occurrences(t,t+365*5,{noMonthly:1,noHol:!Store.settings.showHolidays});
+  const stamp=new Date().toISOString().replace(/[-:]/g,"").replace(/\.\d+/,"");
+  const fold=s=>s.replace(/[\\;,]/g,m=>"\\"+m).replace(/\n/g,"\\n");
+  const L=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//SoTayLichViet//VI","CALSCALE:GREGORIAN","X-WR-CALNAME:Sổ Tay Lịch Việt"];
+  occ.forEach((o,i)=>{const[d,m,y]=jdToDate(o.jd),[d2,m2,y2]=jdToDate(o.jd+1);const rem=o.ev?(o.ev.remind||0):0;
+    L.push("BEGIN:VEVENT","UID:"+(o.ev?o.ev.id:"hol"+i)+"-"+o.jd+"@sotay","DTSTAMP:"+stamp,"DTSTART;VALUE=DATE:"+y+pad(m)+pad(d),"DTEND;VALUE=DATE:"+y2+pad(m2)+pad(d2),
+      "SUMMARY:"+fold(o.title),"DESCRIPTION:"+fold(fmtLunar(o.jd)+" · "+canChiYear(lunarOfJd(o.jd).y)+(o.ev&&o.ev.note?"\n"+o.ev.note:"")));
+    if(o.ev){const al=tr=>L.push("BEGIN:VALARM","ACTION:DISPLAY","DESCRIPTION:"+fold(o.title),"TRIGGER:"+tr,"END:VALARM");al("PT8H");if(rem)al("-PT"+(rem*24-8)+"H")}
+    L.push("END:VEVENT")});
+  L.push("END:VCALENDAR");return{text:L.join("\r\n"),count:occ.length}}
+async function exportICS(){const{text,count}=buildICS();
+  if(!count){toast("Chưa có ngày nào để xuất.");return}
+  const ok=await offerFile("so-tay-lich-viet.ics",text,"text/calendar");
+  if(!ok)openSheet(`<h3>Xuất sang Lịch điện thoại</h3><p class="hint">Trong khung xem này không tải được tệp lịch (.ics). Hãy mở bản cài trên điện thoại (trang GitHub Pages của app) để xuất, hoặc sao chép nội dung dưới đây, lưu thành tệp <b>so-tay.ics</b> rồi mở bằng ứng dụng Lịch.</p><textarea class="in" readonly id="icsTxt" style="min-height:160px;font-size:12px">${esc(text)}</textarea><button class="btn" id="icsCopy">Sao chép</button>`,root=>{root.querySelector("#icsCopy").onclick=()=>copyText(root.querySelector("#icsTxt"))});
+  else toast("Đã tạo "+count+" mục lịch cho 5 năm tới")}
+function copyText(ta){navigator.clipboard&&navigator.clipboard.writeText(ta.value).then(()=>toast("Đã sao chép"),()=>{ta.select();toast("Hãy bấm giữ để sao chép")})||(ta.select())}
+function backupJSON(){return JSON.stringify({app:"so-tay-lich-viet",version:1,exported:new Date().toISOString(),settings:Store.settings,data:Store.data},null,1)}
+function importJSON(text){let o;try{o=JSON.parse(text)}catch(e){toast("Tệp sao lưu không đọc được.");return}
+  if(!o||!o.data){toast("Tệp không phải bản sao lưu của Sổ Tay.");return}let n=0;
+  for(const kind of["notes","events","txns"])for(const it of Object.values(o.data[kind]||{})){if(it&&it.id){Store.put(kind,it);n++}}
+  if(o.settings)Store.setSettings(o.settings);toast("Đã nhập "+n+" mục");closeSheet()}
+
+function settingsSheet(){
+  const counts=`${Store.list("events").length} ngày nhớ · ${Store.list("txns").length} khoản thu chi · ${Store.list("notes").length} ghi chú`;
+  const th=document.documentElement.dataset.theme||"auto";
+  openSheet(`<h3>Cài đặt</h3>
+   <div class="card"><div class="rowh"><b>Nơi lưu dữ liệu</b><span class="mode ${Store.mode==="db"?"sync":""}"><i></i>${Store.mode==="db"?"Tài khoản Claude":"Trên máy này"}</span></div>
+     <p class="hint" style="margin-top:6px">${Store.mode==="db"?"Dữ liệu lưu riêng cho tài khoản của bạn, mở trên máy khác vẫn thấy. Người khác mở link sẽ có sổ riêng của họ.":"Dữ liệu nằm trong trình duyệt của máy này. Hãy sao lưu định kỳ để không mất khi xóa dữ liệu duyệt web."}</p><p class="hint">${counts}</p></div>
+   <div class="field"><span class="lab">Giao diện</span>${segHTML("thm",[["auto","Theo máy"],["light","Sáng"],["dark","Tối"]],th)}</div>
+   <label class="toggle"><span>Hiện ngày lễ, Tết</span><input type="checkbox" id="sHol" ${Store.settings.showHolidays?"checked":""}></label>
+   <label class="toggle"><span>Nhắc mùng 1 và rằm</span><input type="checkbox" id="sMon" ${Store.settings.monthly?"checked":""}></label>
+   <div class="field"><span class="lab">Sao lưu</span><div class="actions"><button class="btn" id="bkOut">Xuất bản sao lưu</button><button class="btn ghost" id="bkIn">Nhập bản sao lưu</button></div></div>
+   <div id="bkArea"></div>
+   <button class="btn ghost block" data-act="ics">Xuất sang Lịch điện thoại (.ics)</button>`,root=>{
+    wireSegs(root,(id,v)=>{if(id==="thm"){if(v==="auto")delete document.documentElement.dataset.theme;else document.documentElement.dataset.theme=v;lsSet("sotay.theme",v)}});
+    root.querySelector("#sHol").onchange=e=>Store.setSettings({showHolidays:e.target.checked});
+    root.querySelector("#sMon").onchange=e=>Store.setSettings({monthly:e.target.checked});
+    root.querySelector("#bkOut").onclick=async()=>{const txt=backupJSON(),d=new Date();const ok=await offerFile(`so-tay-sao-luu-${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}.json`,txt,"application/json");
+      if(!ok){root.querySelector("#bkArea").innerHTML=`<textarea class="in" readonly id="bkTxt" style="min-height:120px;font-size:12px">${esc(txt)}</textarea><button class="btn block" id="bkCopy" style="margin-top:8px">Sao chép</button>`;root.querySelector("#bkCopy").onclick=()=>copyText(root.querySelector("#bkTxt"))}};
+    root.querySelector("#bkIn").onclick=()=>{root.querySelector("#bkArea").innerHTML=`<p class="hint">Chọn tệp .json đã xuất, hoặc dán nội dung sao lưu.</p><input type="file" accept=".json,application/json" id="bkFile" class="in"><textarea class="in" id="bkPaste" placeholder="Dán nội dung sao lưu…" style="min-height:100px;margin-top:8px"></textarea><button class="btn block" id="bkDo" style="margin-top:8px">Nhập</button>`;
+      root.querySelector("#bkFile").onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>importJSON(r.result);r.readAsText(f)};
+      root.querySelector("#bkDo").onclick=()=>importJSON(root.querySelector("#bkPaste").value)};
+  })}
+
+/* ================= SỰ KIỆN CHUNG ================= */
+document.addEventListener("click",e=>{
+  const a=e.target.closest("[data-act]");
+  if(a){const act=a.dataset.act,jd=a.dataset.jd?+a.dataset.jd:null;
+    if(act==="addEvent")eventSheet(null,jd,a.dataset.type);else if(act==="addTxn")txnSheet(null,jd);else if(act==="addNote")noteSheet(null);
+    else if(act==="budget")budgetSheet();else if(act==="ics")exportICS();return}
+  const g=e.target.closest("[data-go]");if(g){UI.tab=g.dataset.go;render();return}
+  const ev=e.target.closest("[data-ev]");if(ev){const x=Store.data.events[ev.dataset.ev];if(x)eventSheet(x);return}
+  const tx=e.target.closest("[data-tx]");if(tx){const x=Store.data.txns[tx.dataset.tx];if(x)txnSheet(x);return}
+  const nt=e.target.closest("[data-note]");if(nt){const x=Store.data.notes[nt.dataset.note];if(x)noteSheet(x);return}
+  const day=e.target.closest("[data-jd]");if(day&&day.classList.contains("day")){const jd=+day.dataset.jd,[,m,y]=jdToDate(jd);UI.selJd=jd;if(m!==UI.calM){UI.calM=m;UI.calY=y}renderCal();return}
+  const c=e.target.closest("[data-cal]");if(c){const v=c.dataset.cal;if(v==="today"){const t=todayJd(),[,m,y]=jdToDate(t);UI.calM=m;UI.calY=y;UI.selJd=t}else shiftCal(+v);renderCal();return}
+  const mo=e.target.closest("[data-mon]");if(mo){let m=UI.moneyM+ +mo.dataset.mon,y=UI.moneyY;if(m<1){m=12;y--}if(m>12){m=1;y++}UI.moneyM=m;UI.moneyY=y;renderMoney();return}
+  const f=e.target.closest("[data-evf]");if(f){UI.evFilter=f.dataset.evf;renderEvents();return}
+  const cv=e.target.closest("[data-conv]");if(cv){UI.conv=cv.dataset.conv;renderCal();return}
+});
+function shiftCal(n){let m=UI.calM+n,y=UI.calY;if(m<1){m=12;y--}if(m>12){m=1;y++}UI.calM=m;UI.calY=y;UI.selJd=jdFromDate(1,m,y);const t=todayJd(),[,tm,ty]=jdToDate(t);if(tm===m&&ty===y)UI.selJd=t}
+document.addEventListener("input",e=>{if(["cvD","cvM","cvY"].includes(e.target.id)){UI[e.target.id]=e.target.value;$("#cvOut").innerHTML=convResult()}});
+document.addEventListener("change",e=>{if(e.target.id==="tgHol")Store.setSettings({showHolidays:e.target.checked});if(e.target.id==="tgMonth")Store.setSettings({monthly:e.target.checked})});
+$("#btnSettings").addEventListener("click",settingsSheet);
+/* vuốt trái/phải để đổi tháng */
+{let sx=0,sy=0;$("#main").addEventListener("touchstart",e=>{if(!e.target.closest("#calGrid"))return sx=0;sx=e.touches[0].clientX;sy=e.touches[0].clientY},{passive:true});
+ $("#main").addEventListener("touchend",e=>{if(!sx)return;const dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;if(Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)*1.5){shiftCal(dx<0?1:-1);renderCal()}sx=0},{passive:true})}
+/* sang ngày mới khi app để mở qua đêm */
+{let last=todayJd();setInterval(()=>{const t=todayJd();if(t!==last){last=t;render()}},60000)}
+
+/* ================= KHỞI ĐỘNG ================= */
+{const th=lsGet("sotay.theme");if(th==="light"||th==="dark")document.documentElement.dataset.theme=th}
+Store.loadLocal();renderMode();render();Store.initCloud();
+</script>
+</body>
+</html>
