@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Tiện ích "tờ lịch" ngoài màn hình chính · Sổ Tay Lịch Việt -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/w_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_bg"
+    android:orientation="vertical">
+    <TextView
+        android:id="@+id/w_month"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/widget_band"
+        android:gravity="center"
+        android:paddingTop="5dp"
+        android:paddingBottom="5dp"
+        android:text="THÁNG 10 · 2026"
+        android:textColor="#FFF7EE"
+        android:textSize="11sp"
+        android:textStyle="bold" />
+    <TextView
+        android:id="@+id/w_day"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fontFamily="sans-serif-condensed"
+        android:gravity="center"
+        android:includeFontPadding="false"
+        android:text="7"
+        android:textColor="@color/widget_ink"
+        android:textSize="44sp"
+        android:textStyle="bold" />
+    <TextView
+        android:id="@+id/w_wd"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="Thứ Tư"
+        android:textColor="@color/widget_ink"
+        android:textSize="13sp"
+        android:textStyle="bold" />
+    <TextView
+        android:id="@+id/w_lunar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:paddingStart="6dp"
+        android:paddingEnd="6dp"
+        android:text="27 tháng Tám · Bính Ngọ"
+        android:textColor="@color/widget_gold"
+        android:textSize="12sp" />
+    <TextView
+        android:id="@+id/w_next"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:maxLines="2"
+        android:ellipsize="end"
+        android:paddingStart="6dp"
+        android:paddingEnd="6dp"
+        android:paddingTop="2dp"
+        android:paddingBottom="7dp"
+        android:text=""
+        android:textColor="@color/widget_red"
+        android:textSize="11sp" />
+</LinearLayout>

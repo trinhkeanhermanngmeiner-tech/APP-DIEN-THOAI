@@ -156,7 +156,8 @@ main{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;p
 .ring{width:86px;height:86px;position:relative;flex:none}
 .ring svg{width:100%;height:100%;transform:rotate(-90deg)}
 .ring span{position:absolute;inset:0;display:grid;place-items:center;font:800 18px var(--f-display)}
-.quick,.qadd{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.quick{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.qadd{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
 .qa{border:0;border-radius:18px;padding:14px 8px;background:var(--surface);box-shadow:var(--shadow);display:flex;flex-direction:column;align-items:center;gap:6px;font-size:13px;font-weight:600}
 .qa i{width:40px;height:40px;border-radius:14px;display:grid;place-items:center;font-style:normal}
 .qa svg{width:22px;height:22px}
@@ -255,6 +256,37 @@ textarea.in{min-height:200px;resize:vertical;line-height:1.55}
 .sw[aria-pressed="true"]{border-color:var(--ink);box-shadow:inset 0 0 0 3px var(--bg)}
 .sw.c-y{background:var(--n-y)} .sw.c-r{background:var(--n-r)} .sw.c-g{background:var(--n-g)} .sw.c-b{background:var(--n-b)} .sw.c-v{background:var(--n-v)}
 .amtin{font:800 30px/1.2 var(--f-display)!important;text-align:center}
+/* chế độ chữ to */
+html.big body{zoom:1.15}
+:root.big{--muted:#3D3935}
+@media (prefers-color-scheme:dark){:root.big:not([data-theme="light"]){--muted:#D9D3CC}}
+:root.big[data-theme="dark"]{--muted:#D9D3CC}
+/* chuyển Thu chi / Hiếu hỷ trong dải đầu */
+.hseg{display:flex;gap:4px;background:rgba(255,255,255,.12);border-radius:14px;padding:4px;margin-top:6px}
+.hseg button{flex:1;border:0;background:none;color:var(--on-hero);font-weight:700;font-size:14px;padding:8px;border-radius:10px;opacity:.85}
+.hseg button[aria-pressed="true"]{background:var(--on-hero);color:var(--hero);opacity:1}
+.gsum{text-align:right;font-size:12px;line-height:1.4;white-space:nowrap}
+.gsum b{font-weight:700}
+.gsum .o{color:var(--red)} .gsum .i{color:var(--jade)}
+.ghist{background:var(--gold-soft);border-radius:14px;padding:10px 12px;font-size:13px;line-height:1.5}
+.check{display:flex;align-items:center;gap:10px;font-size:14px}
+.check input{width:20px;height:20px;accent-color:var(--jade)}
+/* khóa bằng mã PIN */
+.pin{display:flex;flex-direction:column;align-items:center;gap:16px;padding:6px 0}
+.pin .dots{display:flex;gap:14px;min-height:16px}
+.pin .dots i{width:14px;height:14px;border-radius:50%;border:2px solid var(--ink)}
+.pin .dots i.on{background:var(--ink)}
+.pin .msg{min-height:20px;font-size:14px;color:var(--muted);text-align:center}
+.pin .msg.err{color:var(--red);font-weight:600}
+.pin .keys{display:grid;grid-template-columns:repeat(3,68px);gap:12px}
+.pin .keys button{height:60px;border-radius:50%;border:0;background:var(--surface);box-shadow:var(--shadow);font:700 24px var(--f-display);color:var(--ink)}
+.pin .keys button.fn{background:none;box-shadow:none;font:600 13px var(--f-body);color:var(--muted)}
+.pin .keys button.fn svg{width:26px;height:26px}
+@media (prefers-reduced-motion:no-preference){.shake{animation:shake .35s}@keyframes shake{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}}
+.lockhero{display:flex;align-items:center;gap:14px;margin-top:8px}
+.lockhero svg{width:44px;height:44px;color:var(--gold);flex:none}
+.lockhero b{display:block;font:800 22px/1.2 var(--f-display)}
+.lockhero span{font-size:13px;color:var(--hero-muted)}
 .toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:11px 18px;border-radius:14px;font-size:14px;font-weight:600;z-index:30;max-width:90%;text-align:center}
 @media (prefers-reduced-motion:no-preference){.sheet{animation:up .24s cubic-bezier(.2,.8,.2,1)}@keyframes up{from{transform:translateY(40px);opacity:.5}}}
 @media (max-width:370px){.today .big{font-size:108px}.countdown .n{font-size:76px}.cd{flex-basis:136px}}
@@ -461,14 +493,15 @@ const EV_TYPES={birthday:{n:"Sinh nhật",ab:"SN"},death:{n:"Đám giỗ",ab:"Gi
 const KIND_LABEL={birthday:"Sinh nhật",death:"Đám giỗ",anniv:"Kỷ niệm",other:"Sự kiện",once:"Lịch hẹn",hol:"Ngày lễ",month:"Âm lịch"};
 const KIND_AB={hol:"Lễ",month:"Âm",once:"Hẹn"};
 const CATS_OUT=["Ăn uống","Đi chợ","Đi lại","Nhà cửa","Hóa đơn","Mua sắm","Sức khỏe","Học hành","Hiếu hỷ","Con cái","Giải trí","Khác"];
-const CATS_IN=["Lương","Thưởng","Bán hàng","Được cho","Khác"];
+const CATS_IN=["Lương","Thưởng","Bán hàng","Được cho","Hiếu hỷ","Khác"];
+const GIFT_OCC=["Đám cưới","Đám tang","Mừng thọ","Đầy tháng, thôi nôi","Tân gia","Sinh nhật","Khai trương","Ốm đau","Khác"];
 const APP_VERSION="1.0",AUTHOR="BS. Trịnh Kế An",AUTHOR_EMAIL="bstrinhkean@gmail.com";
-const DEFAULT_SETTINGS={showHolidays:true,monthly:true,budget:0,notifyHour:7};
+const DEFAULT_SETTINGS={showHolidays:true,monthly:true,budget:0,notifyHour:7,bigText:false,lockOn:false,pinHash:"",pinSalt:"",pinLen:4,bioOn:true};
 
 const Store={
-  mode:"local", data:{notes:{},events:{},txns:{}}, settings:{...DEFAULT_SETTINGS}, db:null, base:null,
+  mode:"local", data:{notes:{},events:{},txns:{},gifts:{}}, settings:{...DEFAULT_SETTINGS}, db:null, base:null,
   loadLocal(){try{let raw=null;if(NATIVE&&NATIVE.loadData)raw=NATIVE.loadData()||null;if(!raw)raw=lsGet("sotay.v1");
-    if(raw){const o=JSON.parse(raw);this.data={notes:o.data?.notes||{},events:o.data?.events||{},txns:o.data?.txns||{}};this.settings={...DEFAULT_SETTINGS,...(o.settings||{})}}}catch(e){}},
+    if(raw){const o=JSON.parse(raw);this.data={notes:o.data?.notes||{},events:o.data?.events||{},txns:o.data?.txns||{},gifts:o.data?.gifts||{}};this.settings={...DEFAULT_SETTINGS,...(o.settings||{})}}}catch(e){}},
   saveLocal(){const s=JSON.stringify({data:this.data,settings:this.settings});lsSet("sotay.v1",s);if(NATIVE&&NATIVE.saveData)try{NATIVE.saveData(s)}catch(e){}},
   async initCloud(){
     if(NATIVE||!window.claude||!window.claude.use)return;
@@ -476,8 +509,8 @@ const Store={
       const[db,user]=await Promise.all([window.claude.use("db"),window.claude.use("user")]);
       if(!db||!user)return;const id=await user.id();if(!id)return;
       this.db=db;this.base=db.doc("data/users/"+id+"/app");this.mode="db";
-      this.data={notes:{},events:{},txns:{}};render();
-      for(const kind of["notes","events","txns"])
+      this.data={notes:{},events:{},txns:{},gifts:{}};render();
+      for(const kind of["notes","events","txns","gifts"])
         this.base.collection(kind).onSnapshot(snap=>{const o={};snap.docs.forEach(d=>{o[d.id]=d.data()});this.data[kind]=o;scheduleRender()},()=>{});
       this.settingsRef=db.doc("data/users/"+id+"/settings");
       this.settingsRef.onSnapshot(s=>{if(s.exists){this.settings={...DEFAULT_SETTINGS,...s.data()};scheduleRender()}},()=>{});
@@ -520,19 +553,20 @@ const kindOf=o=>o.kind==="hol"?"hol":o.kind;
 function kindDot(o){const k=kindOf(o);const ab=k in EV_TYPES?EV_TYPES[k].ab:KIND_AB[k];return`<span class="dot k-${k}">${esc(ab)}</span>`}
 
 /* ================= TRẠNG THÁI GIAO DIỆN ================= */
-const UI={tab:lsGet("sotay.tab")||"home",calY:0,calM:0,selJd:todayJd(),moneyY:0,moneyM:0,noteQ:"",evFilter:"all",conv:"s"};
+const UI={unlocked:false,bioAsked:false,giftQ:"",moneyMode:lsGet("sotay.mmode")==="gift"?"gift":"tx",tab:lsGet("sotay.tab")||"home",calY:0,calM:0,selJd:todayJd(),moneyY:0,moneyM:0,noteQ:"",evFilter:"all",conv:"s"};
 if(!["home","cal","events","money","notes"].includes(UI.tab))UI.tab="home";
 {const[,m,y]=jdToDate(todayJd());UI.calY=UI.moneyY=y;UI.calM=UI.moneyM=m}
 const TITLES={home:"Sổ Tay Lịch Việt",cal:"Lịch âm dương",events:"Nhắc ngày",money:"Chi tiêu",notes:"Ghi chú"};
 let rq=0;function scheduleRender(){if(rq)return;rq=requestAnimationFrame(()=>{rq=0;render()})}
 let lastTab="";
 function render(){
+  document.documentElement.classList.toggle("big",!!Store.settings.bigText);
   $("#app").dataset.tab=UI.tab;
   if(lastTab!==UI.tab){$("#heroBody").innerHTML="";lastTab=UI.tab}
   for(const t of Object.keys(TITLES))$("#v-"+t).hidden=t!==UI.tab;
   document.querySelectorAll("nav.tabs button").forEach(b=>b.dataset.tab===UI.tab?b.setAttribute("aria-current","page"):b.removeAttribute("aria-current"));
   $("#hdTitle").textContent=TITLES[UI.tab];
-  $("#fab").hidden=UI.tab==="cal";
+  $("#fab").hidden=UI.tab==="cal"||(UI.tab==="money"&&isLocked());
   ({home:renderHome,cal:renderCal,events:renderEvents,money:renderMoney,notes:renderNotes})[UI.tab]();
   syncNative();
 }
@@ -577,15 +611,16 @@ function renderHome(){
   <div class="sec"><h2>Sắp tới</h2><button class="lnk" data-go="events">Tất cả ngày nhớ</button></div>
   <div class="rail">${upcoming.length?upcoming.map(o=>occCard(o,t)).join(""):`<div class="empty">Chưa có ngày nào sắp tới.</div>`}</div>
   <div class="quick">
-    <button class="qa" data-act="addTxn"><i class="k-anniv">${ICON_WALLET}</i>Ghi chi tiêu</button>
-    <button class="qa" data-act="addEvent"><i class="k-death">${ICON_BELL}</i>Thêm ngày nhớ</button>
-    <button class="qa" data-act="addNote"><i class="k-birthday">${ICON_NOTE}</i>Viết ghi chú</button>
+    <button class="qa" data-act="addTxn"><i class="k-anniv">${ICON_WALLET}</i>Chi tiêu</button>
+    <button class="qa" data-act="addGift"><i class="k-month">${ICON_GIFT}</i>Hiếu hỷ</button>
+    <button class="qa" data-act="addEvent"><i class="k-death">${ICON_BELL}</i>Ngày nhớ</button>
+    <button class="qa" data-act="addNote"><i class="k-birthday">${ICON_NOTE}</i>Ghi chú</button>
   </div>
-  <button class="moneycard" data-go="money">
+  ${isLocked()?`<button class="moneycard" data-go="money"><div><div class="lbl">Chi tiêu tháng ${m}</div><div class="val">••••••</div><div class="sub">Đã khóa · chạm để mở bằng mã PIN${bioOn()?" hoặc vân tay":""}</div></div><div class="ring" style="display:grid;place-items:center">${ICON_LOCK.replace("<svg","<svg style=\"width:44px;height:44px;color:var(--gold)\"")}</div></button>`:`<button class="moneycard" data-go="money">
     <div><div class="lbl">Đã chi tháng ${m}</div><div class="val">${money(mo)}</div>
       <div class="sub">${B?(mo>B?"Vượt ngân sách "+moneyShort(mo-B):"Còn "+moneyShort(B-mo)+" trong ngân sách"):"Thu "+moneyShort(mi)+" · chưa đặt ngân sách"}</div></div>
     <div class="ring">${ring(B?mo/B:0,86,mo>B&&B?"var(--red)":"var(--gold)","rgba(255,255,255,.12)")}<span>${B?Math.round(mo/B*100)+"%":"—"}</span></div>
-  </button>
+  </button>`}
   ${pinned.length?`<div class="sec"><h2>Ghi chú đã ghim</h2><button class="lnk" data-go="notes">Mở ghi chú</button></div><div class="notes">${pinned.map(noteCard).join("")}</div>`:""}
   ${Store.list("events").length?"":`<div class="card"><div class="sec"><h2>Bắt đầu từ gia đình</h2></div><p class="hint" style="margin-top:6px">Thêm sinh nhật người thân và ngày giỗ ông bà. App tự đổi ngày âm sang dương mỗi năm và nhắc trước cho bạn.</p><div class="actions" style="margin-top:12px"><button class="btn red" data-act="addEvent" data-type="birthday">+ Sinh nhật</button><button class="btn ghost" data-act="addEvent" data-type="death">+ Đám giỗ</button></div></div>`}
   </div>`;
@@ -614,7 +649,7 @@ function renderCal(){
   <div class="legend"><span><i style="background:var(--red)"></i>Ngày lễ</span><span><i style="background:var(--jade)"></i>Ngày nhớ</span><span><i style="background:var(--gold)"></i>Mùng 1, rằm</span><button class="lnk" data-cal="today" style="margin-left:auto">Về hôm nay</button></div>
   <div class="card">
     <div class="dayhead"><div class="bn">${jdToDate(s)[0]}</div><div class="tt"><b>${WD[weekday(s)]}, ${fmtDate(s)}</b><span>Ngày ${sl.d} tháng ${LMONTH[sl.m]}${sl.leap?" nhuận":""} năm ${canChiYear(sl.y)}<br>Ngày ${canChiDay(s)} · tháng ${canChiMonth(sl.m,sl.y)}</span></div></div>
-    <div class="list" style="margin-top:8px">${so.length||stx.length?so.map(o=>occRow(o,s,false)).join("")+stx.map(txRow).join(""):`<div class="empty">Ngày này chưa có gì.</div>`}</div>
+    <div class="list" style="margin-top:8px">${so.length||stx.length?so.map(o=>occRow(o,s,false)).join("")+(isLocked()&&stx.length?`<button class="item" data-go="money">${ICON_LOCK.replace("<svg",'<svg style="width:40px;height:40px;padding:8px;border-radius:14px;background:var(--surface2);color:var(--muted)"')}<div class="txt"><div class="t">${stx.length} khoản thu chi</div><div class="s">Đang khóa · chạm để mở</div></div></button>`:stx.map(txRow).join("")):`<div class="empty">Ngày này chưa có gì.</div>`}</div>
     <div class="actions" style="margin-top:10px"><button class="btn red" data-act="addEvent" data-jd="${s}">+ Ngày nhớ</button><button class="btn ghost" data-act="addTxn" data-jd="${s}">+ Chi tiêu</button></div>
   </div>
   <div class="card">
@@ -657,10 +692,16 @@ function monthTotals(y,m){const pre=y+"-"+pad(m)+"-";let o=0,i=0;Store.list("txn
 const CAT_COLOR={"Ăn uống":1,"Đi chợ":2,"Đi lại":4,"Nhà cửa":7,"Hóa đơn":5,"Mua sắm":8,"Sức khỏe":3,"Học hành":7,"Hiếu hỷ":6,"Con cái":2,"Giải trí":4,"Khác":8};
 const catColor=c=>`var(--c${CAT_COLOR[c]||8})`;
 function txRow(x){return`<button class="item" data-tx="${x.id}"><span class="dot" style="background:var(--surface2);color:${x.kind==="out"?catColor(x.cat):"var(--jade)"}">${esc(x.cat.slice(0,2))}</span><div class="txt"><div class="t">${esc(x.note||x.cat)}</div><div class="s">${esc(x.cat)}</div></div><span class="amt ${x.kind==="out"?"neg":"pos"}">${x.kind==="out"?"−":"+"}${money(x.amount)}</span></button>`}
+function moneySeg(){return`<div class="hseg" role="group" aria-label="Chọn sổ"><button data-mmode="tx" aria-pressed="${UI.moneyMode!=="gift"}">Thu chi</button><button data-mmode="gift" aria-pressed="${UI.moneyMode==="gift"}">Sổ hiếu hỷ</button></div>`}
 function renderMoney(){
+  const v=$("#v-money");
+  if(isLocked())return renderMoneyLock();
+  if(v.dataset.locked==="1"){v.dataset.locked="0";v.innerHTML=""}
+  if(UI.moneyMode==="gift")return renderGifts();
+  v.dataset.mode="tx";
   const Y=UI.moneyY,M=UI.moneyM,pre=Y+"-"+pad(M)+"-",tx=Store.list("txns").filter(x=>x.date.startsWith(pre)).sort((a,b)=>b.date.localeCompare(a.date)||b.created-a.created);
   const[o,i]=monthTotals(Y,M),B=Store.settings.budget||0;
-  $("#heroBody").innerHTML=`<div class="mnav"><button class="hbtn" data-mon="-1" aria-label="Tháng trước">${ICON_CHEV_L}</button><div class="t"><b>Tháng ${M}, ${Y}</b><span>${tx.length} khoản thu chi</span></div><button class="hbtn" data-mon="1" aria-label="Tháng sau">${ICON_CHEV_R}</button></div>
+  $("#heroBody").innerHTML=moneySeg()+`<div class="mnav"><button class="hbtn" data-mon="-1" aria-label="Tháng trước">${ICON_CHEV_L}</button><div class="t"><b>Tháng ${M}, ${Y}</b><span>${tx.length} khoản thu chi</span></div><button class="hbtn" data-mon="1" aria-label="Tháng sau">${ICON_CHEV_R}</button></div>
    <div class="hstat"><div class="ring" style="width:96px;height:96px">${ring(B?o/B:0,96,o>B&&B?"#FF8A7A":"var(--gold)","rgba(255,255,255,.14)")}<span>${B?Math.round(o/B*100)+"%":"—"}</span></div>
    <div style="min-width:0"><div class="lbl">Đã chi</div><div class="val">${money(o)}</div><div class="sub"><span>Thu <b>${moneyShort(i)}</b></span><span>Còn <b>${moneyShort(i-o)}</b></span>${B?`<span>Ngân sách <b>${moneyShort(B)}</b></span>`:""}</div></div></div>`;
   const cats={};tx.filter(x=>x.kind==="out").forEach(x=>cats[x.cat]=(cats[x.cat]||0)+x.amount);const catArr=Object.entries(cats).sort((a,b)=>b[1]-a[1]);
@@ -686,17 +727,18 @@ function renderNotes(){
 }
 
 /* ================= BẢNG NHẬP (sheet) ================= */
-function openSheet(html,onMount){const s=$("#sheet");s._onClose=null;s.innerHTML=`<div class="grab"></div>`+html;$("#scrim").hidden=false;onMount&&onMount(s)}
+function openSheet(html,onMount){const s=$("#sheet");s._onClose=null;s.dataset.secure="";s.innerHTML=`<div class="grab"></div>`+html;$("#scrim").hidden=false;onMount&&onMount(s)}
 function closeSheet(){const s=$("#sheet");if(s._onClose){const f=s._onClose;s._onClose=null;f()}$("#scrim").hidden=true;s.innerHTML=""}
 $("#scrim").addEventListener("click",e=>{if(e.target.id==="scrim")closeSheet()});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("#scrim").hidden)closeSheet()});
 function segHTML(id,opts,val){return`<div class="seg" id="${id}">${opts.map(([k,n])=>`<button type="button" data-v="${k}" aria-pressed="${k===val}">${n}</button>`).join("")}</div>`}
 function segVal(root,id){return root.querySelector("#"+id+" [aria-pressed=true]").dataset.v}
 function wireSegs(root,cb){root.querySelectorAll(".seg").forEach(s=>s.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;s.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x===b));cb&&cb(s.id,b.dataset.v)}))}
-function confirmBtn(btn,fn){btn.addEventListener("click",()=>{if(btn.dataset.armed){fn()}else{btn.dataset.armed=1;btn.textContent="Bấm lần nữa để xóa";setTimeout(()=>{if(btn.isConnected){delete btn.dataset.armed;btn.textContent="Xóa"}},3000)}})}
+function confirmBtn(btn,fn){const orig=btn.textContent;btn.addEventListener("click",()=>{if(btn.dataset.armed){fn()}else{btn.dataset.armed=1;btn.textContent="Bấm lần nữa để xác nhận";setTimeout(()=>{if(btn.isConnected){delete btn.dataset.armed;btn.textContent=orig}},3000)}})}
 
 function quickAddSheet(){openSheet(`<h3>Thêm mới</h3><div class="qadd">
   <button class="qa" data-act="addTxn"><i class="k-anniv">${ICON_WALLET}</i>Chi tiêu</button>
+  <button class="qa" data-act="addGift"><i class="k-month">${ICON_GIFT}</i>Hiếu hỷ</button>
   <button class="qa" data-act="addEvent"><i class="k-death">${ICON_BELL}</i>Ngày nhớ</button>
   <button class="qa" data-act="addNote"><i class="k-birthday">${ICON_NOTE}</i>Ghi chú</button></div>`)}
 
@@ -759,7 +801,7 @@ function txnSheet(x,presetJd){
     root.querySelector("#txForm").addEventListener("submit",e=>{e.preventDefault();const v=parseAmount(amt.value);if(!v||v<0){toast("Nhập số tiền, ví dụ 50k hoặc 1.5tr.");return}
       const date=root.querySelector("#txDate").value||jdKey(todayJd());
       Store.put("txns",{id:t.id,kind:segVal(root,"txKind"),amount:v,cat,note:root.querySelector("#txNote").value.trim(),date,created:t.created||Date.now()});
-      closeSheet();toast("Đã ghi "+money(v));
+      closeSheet();toast("Đã ghi "+money(v));if(isLocked())return;
       const[y,m]=date.split("-").map(Number);if(UI.tab==="money"){UI.moneyY=y;UI.moneyM=m}
       const B=Store.settings.budget;if(B){const[o]=monthTotals(y,m);if(o>B)setTimeout(()=>toast("Chú ý: đã vượt ngân sách tháng "+money(o-B)),1400);else if(o>B*.9)setTimeout(()=>toast("Đã dùng hơn 90% ngân sách tháng"),1400)}});
     const del=root.querySelector("#txDel");if(del)confirmBtn(del,()=>{Store.del("txns",t.id);closeSheet();toast("Đã xóa")});
@@ -815,7 +857,7 @@ function copyText(ta){const sel=()=>{ta.select();toast("Hãy bấm giữ để s
 function backupJSON(){return JSON.stringify({app:"so-tay-lich-viet",version:1,exported:new Date().toISOString(),settings:Store.settings,data:Store.data},null,1)}
 function importJSON(text){let o;try{o=JSON.parse(text)}catch(e){toast("Tệp sao lưu không đọc được.");return}
   if(!o||!o.data){toast("Tệp không phải bản sao lưu của Sổ Tay.");return}let n=0;
-  for(const kind of["notes","events","txns"])for(const it of Object.values(o.data[kind]||{})){if(it&&it.id){Store.put(kind,it);n++}}
+  for(const kind of["notes","events","txns","gifts"])for(const it of Object.values(o.data[kind]||{})){if(it&&it.id){Store.put(kind,it);n++}}
   if(o.settings)Store.setSettings(o.settings);toast("Đã nhập "+n+" mục");closeSheet()}
 /* Lịch thông báo cho bản Android: danh sách lời nhắc theo ngày trong 400 ngày tới */
 function reminderList(){const t=todayJd(),out=[];
@@ -826,7 +868,7 @@ function reminderList(){const t=todayJd(),out=[];
     else if(o.kind==="month")out.push({date:jdKey(o.jd),title:"Hôm nay là "+o.title.replace("Mùng","mùng").replace("Rằm","rằm")+" âm lịch",text:"Ngày "+canChiDay(o.jd)+" · nhớ thắp hương"})}
   return out}
 let lastSync="";
-function syncNative(){if(!NATIVE)return;try{
+function syncNative(){if(!NATIVE)return;syncWidget();try{
   const color=getComputedStyle($("#app")).getPropertyValue("--hero").trim();if(NATIVE.setBarColor&&color)NATIVE.setBarColor(color);const bg=getComputedStyle(document.body).backgroundColor;if(NATIVE.setNavColor&&bg)NATIVE.setNavColor(bg);
   const json=JSON.stringify(reminderList()),key=json+"|"+Store.settings.notifyHour;if(key!==lastSync&&NATIVE.setReminders){lastSync=key;NATIVE.setReminders(json,Store.settings.notifyHour|0)}}catch(e){}}
 /* Nút Quay lại của Android */
@@ -842,6 +884,12 @@ function settingsSheet(){
    <div class="field"><span class="lab">Giao diện</span>${segHTML("thm",[["auto","Theo máy"],["light","Sáng"],["dark","Tối"]],th)}</div>
    <label class="toggle"><span>Hiện ngày lễ, Tết</span><input type="checkbox" id="sHol" ${Store.settings.showHolidays?"checked":""}></label>
    <label class="toggle"><span>Nhắc mùng 1 và rằm</span><input type="checkbox" id="sMon" ${Store.settings.monthly?"checked":""}></label>
+   <label class="toggle"><span><b>Chữ to, dễ đọc</b><br><span class="hint">Phóng to chữ và tăng độ tương phản cho người lớn tuổi</span></span><input type="checkbox" id="sBig" ${Store.settings.bigText?"checked":""}></label>
+   <div class="field"><span class="lab">Bảo mật</span>
+     <label class="toggle"><span><b>Khóa mục Chi tiêu</b><br><span class="hint">Cần mã PIN${bioAvail?" hoặc vân tay":""} khi mở Chi tiêu và Sổ hiếu hỷ. Các mục khác mở bình thường.</span></span><input type="checkbox" id="sLock" ${lockOn()?"checked":""}></label>
+     ${lockOn()&&bioAvail?`<label class="toggle"><span>Mở khóa bằng vân tay / khuôn mặt</span><input type="checkbox" id="sBio" ${Store.settings.bioOn?"checked":""}></label>`:""}
+     ${lockOn()?`<button class="btn ghost" id="sPin" type="button">Đổi mã PIN</button>`:""}
+   </div>
    <div class="field"><span class="lab">Sao lưu</span><div class="actions"><button class="btn" id="bkOut">Xuất sao lưu</button><button class="btn ghost" id="bkIn">Nhập sao lưu</button></div></div>
    <div id="bkArea"></div>
    ${NATIVE?"":`<button class="btn ghost block" data-act="ics">Xuất sang Lịch điện thoại (.ics)</button>`}
@@ -855,22 +903,27 @@ function settingsSheet(){
     wireSegs(root,(id,v)=>{if(id==="thm"){if(v==="auto")delete document.documentElement.dataset.theme;else document.documentElement.dataset.theme=v;lsSet("sotay.theme",v);syncNative()}});
     root.querySelector("#sHol").onchange=e=>Store.setSettings({showHolidays:e.target.checked});
     root.querySelector("#sMon").onchange=e=>Store.setSettings({monthly:e.target.checked});
+    root.querySelector("#sBig").onchange=e=>Store.setSettings({bigText:e.target.checked});
+    root.querySelector("#sLock").onchange=e=>{if(e.target.checked){e.target.checked=false;setupPinSheet()}else{e.target.checked=true;requireUnlock(()=>{Store.setSettings({lockOn:false,pinHash:"",pinSalt:""});toast("Đã tắt khóa mục Chi tiêu")},"Nhập mã PIN để tắt khóa")}};
+    const sb=root.querySelector("#sBio");if(sb)sb.onchange=e=>Store.setSettings({bioOn:e.target.checked});
+    const sp=root.querySelector("#sPin");if(sp)sp.onclick=()=>requireUnlock(()=>setupPinSheet(),"Nhập mã PIN hiện tại");
     const hr=root.querySelector("#sHour");if(hr)hr.onchange=e=>{Store.setSettings({notifyHour:+e.target.value});toast("Sẽ báo lúc "+pad(+e.target.value)+":00 mỗi ngày")};
     root.querySelector("#abCopy").onclick=()=>{const ok=()=>toast("Đã sao chép địa chỉ email"),sel=()=>{const r=document.createRange();r.selectNodeContents(root.querySelector("#abEmail"));const g=getSelection();g.removeAllRanges();g.addRange(r);toast("Hãy bấm giữ để sao chép")};if(navigator.clipboard)navigator.clipboard.writeText(AUTHOR_EMAIL).then(ok,sel);else sel()};
     const ts=root.querySelector("#sTest");if(ts)ts.onclick=()=>{try{NATIVE.testNotify()}catch(e){}};
-    root.querySelector("#bkOut").onclick=async()=>{const txt=backupJSON(),d=new Date();const ok=await offerFile(`so-tay-sao-luu-${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}.json`,txt,"application/json");
-      if(!ok){root.querySelector("#bkArea").innerHTML=`<textarea class="in" readonly id="bkTxt" style="min-height:120px;font-size:12px">${esc(txt)}</textarea><button class="btn block" id="bkCopy" style="margin-top:8px">Sao chép</button>`;root.querySelector("#bkCopy").onclick=()=>copyText(root.querySelector("#bkTxt"))}};
-    root.querySelector("#bkIn").onclick=()=>{root.querySelector("#bkArea").innerHTML=`<p class="hint">Chọn tệp .json đã xuất, hoặc dán nội dung sao lưu.</p><input type="file" accept=".json,application/json,text/plain" id="bkFile" class="in"><textarea class="in" id="bkPaste" placeholder="Dán nội dung sao lưu…" style="min-height:100px;margin-top:8px"></textarea><button class="btn block" id="bkDo" style="margin-top:8px">Nhập</button>`;
+    root.querySelector("#bkOut").onclick=()=>requireUnlock(async()=>{if(!$("#bkArea"))settingsSheet();const root=$("#sheet");const txt=backupJSON(),d=new Date();const ok=await offerFile(`so-tay-sao-luu-${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}.json`,txt,"application/json");
+      if(!ok){root.querySelector("#bkArea").innerHTML=`<textarea class="in" readonly id="bkTxt" style="min-height:120px;font-size:12px">${esc(txt)}</textarea><button class="btn block" id="bkCopy" style="margin-top:8px">Sao chép</button>`;root.querySelector("#bkCopy").onclick=()=>copyText(root.querySelector("#bkTxt"))}},"Nhập mã PIN để sao lưu");
+    root.querySelector("#bkIn").onclick=()=>requireUnlock(()=>{if(!$("#bkArea"))settingsSheet();const root=$("#sheet");root.querySelector("#bkArea").innerHTML=`<p class="hint">Chọn tệp .json đã xuất, hoặc dán nội dung sao lưu.</p><input type="file" accept=".json,application/json,text/plain" id="bkFile" class="in"><textarea class="in" id="bkPaste" placeholder="Dán nội dung sao lưu…" style="min-height:100px;margin-top:8px"></textarea><button class="btn block" id="bkDo" style="margin-top:8px">Nhập</button>`;
       root.querySelector("#bkFile").onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>importJSON(r.result);r.readAsText(f)};
-      root.querySelector("#bkDo").onclick=()=>importJSON(root.querySelector("#bkPaste").value)};
+      root.querySelector("#bkDo").onclick=()=>importJSON(root.querySelector("#bkPaste").value)},"Nhập mã PIN để nhập sao lưu");
   })}
 
 /* ================= SỰ KIỆN CHUNG ================= */
 document.addEventListener("click",e=>{
   const a=e.target.closest("[data-act]");
   if(a){const act=a.dataset.act,jd=a.dataset.jd?+a.dataset.jd:null;
-    if(["addEvent","addTxn","addNote"].includes(act)&&!$("#scrim").hidden)closeSheet();
+    if(["addEvent","addTxn","addNote","addGift"].includes(act)&&!$("#scrim").hidden)closeSheet();
     if(act==="addEvent")eventSheet(null,jd,a.dataset.type);else if(act==="addTxn")txnSheet(null,jd);else if(act==="addNote")noteSheet(null);
+    else if(act==="addGift")giftSheet(null);
     else if(act==="budget")budgetSheet();else if(act==="ics")exportICS();return}
   const g=e.target.closest("[data-go]");if(g){goTab(g.dataset.go);return}
   const ev=e.target.closest("[data-ev]");if(ev){const x=Store.data.events[ev.dataset.ev];if(x)eventSheet(x);return}
@@ -879,11 +932,14 @@ document.addEventListener("click",e=>{
   const dd=e.target.closest("[data-day]");if(dd){const jd=+dd.dataset.day,[,m,y]=jdToDate(jd);UI.selJd=jd;UI.calM=m;UI.calY=y;goTab("cal");return}
   const day=e.target.closest("[data-jd]");if(day&&day.classList.contains("day")){const jd=+day.dataset.jd,[,m,y]=jdToDate(jd);UI.selJd=jd;if(m!==UI.calM){UI.calM=m;UI.calY=y}renderCal();return}
   const c=e.target.closest("[data-cal]");if(c){const v=c.dataset.cal;if(v==="today"){const t=todayJd(),[,m,y]=jdToDate(t);UI.calM=m;UI.calY=y;UI.selJd=t}else shiftCal(+v);renderCal();return}
+  const mm=e.target.closest("[data-mmode]");if(mm){UI.moneyMode=mm.dataset.mmode;lsSet("sotay.mmode",UI.moneyMode);renderMoney();$("#fab").hidden=false;return}
+  const gp=e.target.closest("[data-gp]");if(gp){giftPersonSheet(gp.dataset.gp);return}
+  const gi=e.target.closest("[data-gift]");if(gi){const x=Store.data.gifts[gi.dataset.gift];if(x)giftSheet(x);return}
   const mo=e.target.closest("[data-mon]");if(mo){let m=UI.moneyM+ +mo.dataset.mon,y=UI.moneyY;if(m<1){m=12;y--}if(m>12){m=1;y++}UI.moneyM=m;UI.moneyY=y;renderMoney();return}
   const f=e.target.closest("[data-evf]");if(f){UI.evFilter=f.dataset.evf;renderEvents();return}
   const cv=e.target.closest("[data-conv]");if(cv){UI.conv=cv.dataset.conv;renderCal();return}
 });
-$("#fab").addEventListener("click",()=>{const f={home:quickAddSheet,events:()=>eventSheet(null),money:()=>txnSheet(null),notes:()=>noteSheet(null)}[UI.tab];if(f)f()});
+$("#fab").addEventListener("click",()=>{const f={home:quickAddSheet,events:()=>eventSheet(null),money:()=>UI.moneyMode==="gift"?giftSheet(null):txnSheet(null),notes:()=>noteSheet(null)}[UI.tab];if(f)f()});
 function shiftCal(n){let m=UI.calM+n,y=UI.calY;if(m<1){m=12;y--}if(m>12){m=1;y++}UI.calM=m;UI.calY=y;UI.selJd=jdFromDate(1,m,y);const t=todayJd(),[,tm,ty]=jdToDate(t);if(tm===m&&ty===y)UI.selJd=t}
 document.addEventListener("input",e=>{if(["cvD","cvM","cvY"].includes(e.target.id)){UI[e.target.id]=e.target.value;$("#cvOut").innerHTML=convResult()}});
 document.addEventListener("change",e=>{if(e.target.id==="tgHol")Store.setSettings({showHolidays:e.target.checked});if(e.target.id==="tgMonth")Store.setSettings({monthly:e.target.checked})});
@@ -893,6 +949,133 @@ $("#btnSettings").addEventListener("click",settingsSheet);
  $("#main").addEventListener("touchend",e=>{if(!sx)return;const dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;if(Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)*1.5){shiftCal(dx<0?1:-1);renderCal()}sx=0},{passive:true})}
 /* sang ngày mới khi app để mở qua đêm */
 {let last=todayJd();setInterval(()=>{const t=todayJd();if(t!==last){last=t;render()}},60000)}
+
+
+/* ================= KHÓA MỤC CHI TIÊU ================= */
+const ICON_LOCK=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4" y="10" width="16" height="11" rx="3"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/><circle cx="12" cy="15.5" r="1.4" fill="currentColor"/></svg>`;
+const ICON_FINGER=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6.5 7.5A7 7 0 0 1 19 11v2M5 11a7 7 0 0 1 .4-2.3M12 11v3a8 8 0 0 0 1.5 4.7M9 11a3 3 0 0 1 6 0v2.5a10 10 0 0 0 1 4.2M5 15a14 14 0 0 0 1 4M8.6 21a11 11 0 0 1-2-6.2V11"/></svg>`;
+let bioAvail=false;try{bioAvail=!!(NATIVE&&NATIVE.canBiometric&&NATIVE.canBiometric())}catch(e){}
+const lockOn=()=>!!(Store.settings.lockOn&&Store.settings.pinHash);
+const isLocked=()=>lockOn()&&!UI.unlocked;
+const bioOn=()=>bioAvail&&Store.settings.bioOn!==false;
+async function hashPin(pin,salt){const data=new TextEncoder().encode("sotay:"+salt+":"+pin);
+  try{const b=await crypto.subtle.digest("SHA-256",data);return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("")}
+  catch(e){let h=2166136261;for(const c of data){h^=c;h=Math.imul(h,16777619)}return"f"+(h>>>0).toString(16)}}
+let pinFails=0,pinWaitUntil=0;
+async function checkPin(pin){if(Date.now()<pinWaitUntil)return"wait";const h=await hashPin(pin,Store.settings.pinSalt);
+  if(h===Store.settings.pinHash){pinFails=0;return"ok"}if(++pinFails>=5){pinFails=0;pinWaitUntil=Date.now()+30000;return"wait"}return"bad"}
+let bioCb=null;
+function askBio(cb){if(!bioOn())return false;bioCb=cb;try{NATIVE.biometricAuth()}catch(e){bioCb=null;return false}return true}
+window.onBiometric=function(ok){const f=bioCb;bioCb=null;if(ok&&f)f()};
+/* Bàn phím số nhập mã PIN */
+function pinPad(box,{len,onPin,onBio}){let v="";
+  box.innerHTML=`<div class="pin"><div class="dots"></div><div class="msg" aria-live="polite"></div><div class="keys">${[1,2,3,4,5,6,7,8,9].map(n=>`<button type="button" data-k="${n}">${n}</button>`).join("")}<button type="button" class="fn" data-k="bio" ${onBio?`aria-label="Dùng vân tay"`:"disabled"}>${onBio?ICON_FINGER:""}</button><button type="button" data-k="0">0</button><button type="button" class="fn" data-k="del">Xóa</button></div></div>`;
+  const pinEl=box.querySelector(".pin"),msg=box.querySelector(".msg");
+  const draw=()=>{box.querySelector(".dots").innerHTML=Array.from({length:len},(_,i)=>`<i class="${i<v.length?"on":""}"></i>`).join("")};
+  const api={error(t){msg.textContent=t;msg.className="msg err";pinEl.classList.remove("shake");void pinEl.offsetWidth;pinEl.classList.add("shake")},info(t){msg.textContent=t;msg.className="msg"}};
+  const press=k=>{if(k==="del"){v=v.slice(0,-1);draw();return}if(k==="bio"){onBio&&onBio();return}if(v.length>=len)return;v+=k;draw();
+    if(v.length===len){const p=v;setTimeout(()=>{v="";draw();onPin(p,api)},120)}};
+  box.querySelector(".keys").addEventListener("click",e=>{const b=e.target.closest("[data-k]");if(b)press(b.dataset.k)});
+  const kd=e=>{if(!box.isConnected){document.removeEventListener("keydown",kd);return}if(/^[0-9]$/.test(e.key))press(e.key);else if(e.key==="Backspace")press("del")};
+  document.addEventListener("keydown",kd);draw();return api}
+async function tryPin(p,api,done){const r=await checkPin(p);if(r==="ok")done();else api.error(r==="wait"?"Nhập sai nhiều lần. Hãy thử lại sau 30 giây.":"Sai mã PIN, hãy thử lại")}
+function unlockNow(){UI.unlocked=true;UI.bioAsked=false;render()}
+function renderMoneyLock(){const v=$("#v-money");
+  if(!$("#heroBody .lockhero"))$("#heroBody").innerHTML=`<div class="lockhero">${ICON_LOCK}<div><b>Chi tiêu đang được khóa</b><span>Nhập mã PIN${bioOn()?" hoặc dùng vân tay":""} để xem thu chi và sổ hiếu hỷ</span></div></div><div style="height:20px"></div>`;
+  if(v.dataset.locked==="1")return;v.dataset.locked="1";v.dataset.mode="";
+  v.innerHTML=`<div class="view"><div class="card" id="lockPad"></div><button class="lnk" id="pinForgot" style="align-self:center">Quên mã PIN?</button></div>`;
+  pinPad($("#lockPad"),{len:Store.settings.pinLen||4,onPin:(p,api)=>tryPin(p,api,unlockNow),onBio:bioOn()?()=>askBio(unlockNow):null});
+  $("#pinForgot").onclick=forgotPinSheet;
+  if(bioOn()&&!UI.bioAsked){UI.bioAsked=true;setTimeout(()=>{if(isLocked()&&UI.tab==="money")askBio(unlockNow)},250)}}
+/* Yêu cầu mở khóa trước khi làm việc cb (nếu đang khóa) */
+function requireUnlock(cb,title){if(!isLocked())return cb();
+  const ok=()=>{UI.unlocked=true;closeSheet();render();cb()};
+  openSheet(`<h3>${esc(title||"Nhập mã PIN")}</h3><div id="pinBox"></div>`,root=>{root.dataset.secure="1";
+    pinPad(root.querySelector("#pinBox"),{len:Store.settings.pinLen||4,onPin:(p,api)=>tryPin(p,api,ok),onBio:bioOn()?()=>askBio(ok):null})});
+  if(bioOn())setTimeout(()=>askBio(ok),250)}
+function setupPinSheet(){let first=null,len=Store.settings.pinLen||4;
+  openSheet(`<h3>Đặt mã PIN cho Chi tiêu</h3>${segHTML("pinLen",[["4","4 chữ số"],["6","6 chữ số"]],String(len))}<p class="hint" id="pinStep" style="text-align:center;font-size:15px">Nhập mã PIN mới</p><div id="pinBox"></div>`,root=>{
+    const step=root.querySelector("#pinStep");
+    const mount=()=>pinPad(root.querySelector("#pinBox"),{len,onPin:async(p,api)=>{
+      if(first===null){first=p;step.textContent="Nhập lại mã PIN để xác nhận";api.info("")}
+      else if(p!==first){first=null;step.textContent="Nhập mã PIN mới";api.error("Hai lần nhập không khớp, hãy nhập lại")}
+      else{const salt=uid(),h=await hashPin(p,salt);Store.setSettings({lockOn:true,pinHash:h,pinSalt:salt,pinLen:len});UI.unlocked=true;closeSheet();
+        toast(bioAvail?"Đã bật khóa. Có thể mở bằng mã PIN hoặc vân tay.":"Đã bật khóa mục Chi tiêu")}}});
+    wireSegs(root,(id,v)=>{len=+v;first=null;step.textContent="Nhập mã PIN mới";mount()});mount()})}
+function forgotPinSheet(){openSheet(`<h3>Quên mã PIN</h3><p class="hint" style="font-size:14px">Mã PIN không thể khôi phục.${bioOn()?" Nếu máy còn nhận vân tay của bạn, hãy mở khóa bằng vân tay rồi vào Cài đặt để đổi mã PIN.":""} Cách còn lại là <b>xóa toàn bộ dữ liệu thu chi và sổ hiếu hỷ</b> để gỡ khóa. Ghi chú và ngày nhớ được giữ nguyên.</p>
+  <div class="actions"><button class="btn danger" id="fgDel">Xóa dữ liệu chi tiêu và gỡ khóa</button><button class="btn ghost" id="fgBack">Quay lại</button></div>`,root=>{
+    root.querySelector("#fgBack").onclick=closeSheet;
+    confirmBtn(root.querySelector("#fgDel"),()=>{for(const k of["txns","gifts"])for(const id of Object.keys(Store.data[k]||{}))Store.del(k,id);
+      Store.setSettings({lockOn:false,pinHash:"",pinSalt:""});closeSheet();toast("Đã xóa dữ liệu chi tiêu và gỡ khóa")})})}
+/* Khóa lại khi app chạy nền */
+window.sotayLock=function(){if(!lockOn()||!UI.unlocked)return;UI.unlocked=false;UI.bioAsked=false;if($("#sheet").dataset.secure)closeSheet();render()};
+document.addEventListener("visibilitychange",()=>{if(document.hidden)window.sotayLock()});
+
+/* ================= SỔ HIẾU HỶ ================= */
+const ICON_GIFT=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="8" width="18" height="5" rx="1.5"/><path d="M5 13v7h14v-7M12 8v12M12 8c-1.5-4-6-4-6-1.5S10 8 12 8zm0 0c1.5-4 6-4 6-1.5S14 8 12 8z"/></svg>`;
+const giftKey=n=>String(n||"").trim().toLowerCase().normalize("NFC").replace(/\s+/g," ");
+function giftGroups(){const g={};for(const x of Store.list("gifts")){const k=giftKey(x.name);const G=g[k]||(g[k]={key:k,name:x.name,items:[],give:0,recv:0,last:""});
+  G.items.push(x);if(x.dir==="give")G.give+=x.amount||0;else G.recv+=x.amount||0;if(x.date>=G.last){G.last=x.date;G.name=x.name}}
+  for(const G of Object.values(g))G.items.sort((a,b)=>b.date.localeCompare(a.date));return Object.values(g).sort((a,b)=>b.last.localeCompare(a.last))}
+const giftAmt=x=>x.amount?money(x.amount):"Hiện vật";
+const giftLine=x=>`${x.dir==="give"?"Mình mừng":"Nhận"} ${giftAmt(x)} · ${esc(x.occ)} · ${fmtDate(keyJd(x.date))}`;
+function giftHistoryHTML(name,exceptId){const k=giftKey(name);if(!k)return"";const items=Store.list("gifts").filter(x=>giftKey(x.name)===k&&x.id!==exceptId).sort((a,b)=>b.date.localeCompare(a.date));
+  if(!items.length)return"";const recv=items.filter(x=>x.dir==="recv"),give=items.filter(x=>x.dir==="give");
+  return`<div class="ghist"><b>Đã có ${items.length} lần với ${esc(items[0].name)}</b>${recv.length?`<br>Họ mừng mình gần nhất: <b>${giftAmt(recv[0])}</b> (${esc(recv[0].occ)}, ${keyJd(recv[0].date)?jdToDate(keyJd(recv[0].date))[2]:""})`:""}${give.length?`<br>Mình mừng họ gần nhất: <b>${giftAmt(give[0])}</b> (${esc(give[0].occ)}, ${jdToDate(keyJd(give[0].date))[2]})`:""}</div>`}
+function renderGifts(){const v=$("#v-money"),groups=giftGroups(),all=Store.list("gifts");
+  const give=all.filter(x=>x.dir==="give").reduce((s,x)=>s+(x.amount||0),0),recv=all.filter(x=>x.dir==="recv").reduce((s,x)=>s+(x.amount||0),0);
+  $("#heroBody").innerHTML=moneySeg()+`<div class="hstat" style="grid-template-columns:1fr 1fr"><div><div class="lbl">Mình đã mừng</div><div class="val">${moneyShort(give)}</div></div><div><div class="lbl">Đã nhận</div><div class="val">${moneyShort(recv)}</div></div></div><div class="hstat" style="margin-top:4px"><div class="sub" style="margin:0"><span><b>${groups.length}</b> gia đình, người quen · <b>${all.length}</b> lần ghi</span></div></div>`;
+  if(v.dataset.mode!=="gift"||!v.querySelector("#giftQ")){v.dataset.mode="gift";
+    v.innerHTML=`<div class="view"><input class="in" id="giftQ" type="search" placeholder="Tìm tên người, gia đình…" aria-label="Tìm trong sổ hiếu hỷ" value="${esc(UI.giftQ||"")}"><div id="giftList"></div></div>`;
+    v.querySelector("#giftQ").addEventListener("input",e=>{UI.giftQ=e.target.value;renderGifts()})}
+  const q=giftKey(UI.giftQ||""),shown=groups.filter(G=>!q||G.key.includes(q));
+  $("#giftList").innerHTML=shown.length?`<div class="card"><div class="list">${shown.map(G=>{const lastI=G.items[0];return`<button class="item" data-gp="${esc(G.key)}"><span class="dot k-month">${esc(G.name.trim().charAt(0).toUpperCase()||"?")}</span><div class="txt"><div class="t">${esc(G.name)}</div><div class="s">${esc(lastI.occ)} · ${fmtDate(keyJd(lastI.date))} · ${G.items.length} lần</div></div><div class="gsum">${G.give?`<div>Mừng <b class="o">${moneyShort(G.give)}</b></div>`:""}${G.recv?`<div>Nhận <b class="i">${moneyShort(G.recv)}</b></div>`:""}</div></button>`}).join("")}</div></div>`
+    :`<div class="card"><div class="empty">${q?"Không tìm thấy tên này trong sổ.":"Chưa có ghi chép. Ghi lại tiền mừng đám cưới, phúng viếng, mừng thọ… để lần sau biết nên mừng lại bao nhiêu."}</div>${q?"":`<div class="actions"><button class="btn red" data-act="addGift">+ Ghi lần đầu tiên</button></div>`}</div>`}
+function giftPersonSheet(key){const G=giftGroups().find(x=>x.key===key);if(!G)return;
+  openSheet(`<h3>${esc(G.name)}</h3><div class="hstat" style="grid-template-columns:1fr 1fr;margin:0"><div class="card" style="padding:10px 12px"><div class="small muted">Mình đã mừng</div><div class="amt neg" style="font-size:18px">${money(G.give)}</div></div><div class="card" style="padding:10px 12px"><div class="small muted">Họ đã mừng mình</div><div class="amt pos" style="font-size:18px">${money(G.recv)}</div></div></div>
+   <div class="card"><div class="list">${G.items.map(x=>`<button class="item" data-gift="${x.id}"><span class="dot ${x.dir==="give"?"k-anniv":"k-birthday"}">${x.dir==="give"?"Đi":"Nhận"}</span><div class="txt"><div class="t">${esc(x.occ)}</div><div class="s">${fmtDate(keyJd(x.date))}${x.note?" · "+esc(x.note):""}</div></div><span class="amt ${x.dir==="give"?"neg":"pos"}">${giftAmt(x)}</span></button>`).join("")}</div></div>
+   <button class="btn red" id="gpAdd">+ Thêm lần mới với ${esc(G.name)}</button>`,root=>{root.dataset.secure="1";root.querySelector("#gpAdd").onclick=()=>{closeSheet();giftSheet(null,G.name)}})}
+function giftSheet(x,presetName){const isNew=!x;const g=x||{id:uid(),name:presetName||"",dir:"give",occ:"Đám cưới",amount:"",date:jdKey(todayJd()),note:"",txId:""};
+  const names=[...new Set(Store.list("gifts").map(i=>i.name))];
+  openSheet(`<h3>${isNew?"Ghi sổ hiếu hỷ":"Sửa ghi chép"}</h3>
+  <form id="gfForm" style="display:flex;flex-direction:column;gap:14px">
+    ${segHTML("gfDir",[["give","Mình đi mừng"],["recv","Nhận mừng"]],g.dir)}
+    <div class="field"><label for="gfName">Tên người / gia đình</label><input class="in" id="gfName" required list="gfNames" value="${esc(g.name)}" placeholder="Ví dụ: Nhà anh Tuấn (Hà Đông)"><datalist id="gfNames">${names.map(n=>`<option value="${esc(n)}">`).join("")}</datalist></div>
+    <div id="gfHist"></div>
+    <div class="field"><span class="lab">Dịp</span><div class="chips" id="gfOcc">${GIFT_OCC.map(o=>`<button type="button" class="chip" data-o="${esc(o)}" aria-pressed="${o===g.occ}">${esc(o)}</button>`).join("")}</div></div>
+    <div class="field"><input class="in num amtin" id="gfAmt" inputmode="decimal" value="${g.amount||""}" placeholder="0" aria-label="Số tiền"><span class="hint" id="gfAmtV" style="text-align:center">Gõ 500k, 1tr… Để trống nếu mừng bằng hiện vật</span></div>
+    <div class="chips" id="gfQuick" style="justify-content:center">${["200k","300k","500k","1tr","2tr"].map(v=>`<button type="button" class="chip" data-q="${v}">${v}</button>`).join("")}</div>
+    <div class="field"><label for="gfDate">Ngày</label><input class="in" type="date" id="gfDate" value="${g.date}"></div>
+    <div class="field"><label for="gfNote">Ghi chú</label><input class="in" id="gfNote" value="${esc(g.note||"")}" placeholder="Ví dụ: con gái lấy chồng, mừng kèm bộ ấm chén"></div>
+    <label class="check"><input type="checkbox" id="gfTx" ${isNew?"checked":g.txId?"checked":""}><span>Ghi luôn vào sổ thu chi (nhóm Hiếu hỷ)</span></label>
+    <div class="actions"><button class="btn red" type="submit">Lưu</button>${isNew?"":`<button class="btn danger" type="button" id="gfDel">Xóa</button>`}</div>
+  </form>`,root=>{root.dataset.secure=isNew?"":"1";let occ=g.occ;
+    const amt=root.querySelector("#gfAmt"),showV=()=>{const v=parseAmount(amt.value);root.querySelector("#gfAmtV").textContent=v?money(v):"Gõ 500k, 1tr… Để trống nếu mừng bằng hiện vật"};
+    const hist=()=>{root.querySelector("#gfHist").innerHTML=isLocked()?"":giftHistoryHTML(root.querySelector("#gfName").value,g.id)};
+    amt.addEventListener("input",showV);showV();root.querySelector("#gfName").addEventListener("input",hist);hist();
+    root.querySelector("#gfQuick").addEventListener("click",e=>{const b=e.target.closest("[data-q]");if(b){amt.value=b.dataset.q;showV()}});
+    root.querySelector("#gfOcc").addEventListener("click",e=>{const b=e.target.closest("[data-o]");if(!b)return;occ=b.dataset.o;root.querySelectorAll("#gfOcc .chip").forEach(c=>c.setAttribute("aria-pressed",c===b))});
+    wireSegs(root);
+    root.querySelector("#gfForm").addEventListener("submit",e=>{e.preventDefault();const name=root.querySelector("#gfName").value.trim();if(!name){toast("Nhập tên người hoặc gia đình.");return}
+      const amount=parseAmount(amt.value),dir=segVal(root,"gfDir"),date=root.querySelector("#gfDate").value||jdKey(todayJd()),note=root.querySelector("#gfNote").value.trim();
+      const withTx=root.querySelector("#gfTx").checked&&amount>0,txId=withTx?(g.txId||"g-"+g.id):"";
+      if(g.txId&&!withTx)Store.del("txns",g.txId);
+      if(withTx)Store.put("txns",{id:txId,kind:dir==="give"?"out":"in",amount,cat:"Hiếu hỷ",note:(dir==="give"?"Mừng ":"Nhận mừng ")+occ.toLowerCase()+" · "+name,date,created:Store.data.txns[txId]?.created||Date.now(),gift:g.id});
+      Store.put("gifts",{id:g.id,name,dir,occ,amount,date,note,txId,created:g.created||Date.now()});
+      closeSheet();toast(isNew?"Đã ghi vào sổ hiếu hỷ":"Đã lưu")});
+    const del=root.querySelector("#gfDel");if(del)confirmBtn(del,()=>{if(g.txId)Store.del("txns",g.txId);Store.del("gifts",g.id);closeSheet();toast("Đã xóa")});
+    if(isNew&&!presetName)setTimeout(()=>root.querySelector("#gfName").focus(),60)})}
+
+/* ================= TIỆN ÍCH MÀN HÌNH CHÍNH (Android) ================= */
+/* Tính sẵn cho 400 ngày: ngày âm, năm can chi và ngày nhớ sắp tới, để tiện ích tờ lịch tự hiển thị mỗi ngày. */
+function widgetData(){const t=todayJd(),occ=occurrences(t,t+460,{noMonthly:1}),user=occ.filter(o=>o.ev),hol=occ.filter(o=>o.kind==="hol"),days={};let ui=0,hi=0;
+  for(let jd=t;jd<t+400;jd++){const l=lunarOfJd(jd);while(ui<user.length&&user[ui].jd<jd)ui++;while(hi<hol.length&&hol[hi].jd<jd)hi++;
+    const u=user[ui],h=hol[hi],nx=u&&u.jd-jd<=60?u:(h&&(!u||h.jd<=u.jd)?h:u);const n=nx?nx.jd-jd:0;
+    days[jdKey(jd)]={l:l.d+" tháng "+LMONTH[l.m]+(l.leap?" nhuận":""),y:canChiYear(l.y),n:nx?(n===0?"Hôm nay: ":n===1?"Ngày mai: ":"Còn "+n+" ngày: ")+nx.title:""}}
+  return JSON.stringify(days)}
+let lastWidgetKey="";
+function syncWidget(){if(!NATIVE||!NATIVE.setWidgetData)return;const k=todayJd()+"|"+JSON.stringify(Store.data.events)+"|"+Store.settings.showHolidays;
+  if(k===lastWidgetKey)return;lastWidgetKey=k;try{NATIVE.setWidgetData(widgetData())}catch(e){}}
 
 /* ================= KHỞI ĐỘNG ================= */
 {const th=lsGet("sotay.theme");if(th==="light"||th==="dark")document.documentElement.dataset.theme=th}

@@ -39,6 +39,21 @@ public class LaunchTest {
         System.out.println("saveFile=" + call(b, "saveFile", "a.json", "{}", "application/json"));
         NotificationManager nm = a.getSystemService(NotificationManager.class);
         System.out.println("notifications=" + shadowOf(nm).getAllNotifications().size());
+        // Tiện ích tờ lịch: lưu dữ liệu, dựng RemoteViews và thử hiển thị bố cục thật
+        call(b, "setWidgetData", "{\"" + today + "\":{\"l\":\"27 tháng Tám\",\"y\":\"Bính Ngọ\",\"n\":\"Còn 5 ngày: Giỗ ông nội\"}}");
+        android.widget.RemoteViews rv = LichWidget.build(a);
+        android.view.View wv = rv.apply(a, new android.widget.FrameLayout(a));
+        android.widget.TextView lunar = wv.findViewById(R.id.w_lunar), next = wv.findViewById(R.id.w_next);
+        System.out.println("widget: " + lunar.getText() + " | " + next.getText());
+        if (!lunar.getText().toString().contains("Bính Ngọ")) throw new AssertionError("widget không đọc được dữ liệu");
+        android.appwidget.AppWidgetManager wm = android.appwidget.AppWidgetManager.getInstance(a);
+        int wid = shadowOf(wm).createWidget(LichWidget.class, R.layout.widget_lich);
+        new LichWidget().onUpdate(a, wm, new int[]{wid});
+        LichWidget.refreshAll(a);
+        // Vân tay: kiểm tra có/không và gọi hộp thoại (Robolectric không có cảm biến thật)
+        System.out.println("canBiometric=" + call(b, "canBiometric"));
+        try { call(b, "biometricAuth"); org.robolectric.shadows.ShadowLooper.idleMainLooper(); System.out.println("biometricAuth: không lỗi"); }
+        catch (Throwable t) { throw new AssertionError("biometricAuth lỗi", t); }
         a.onBackPressed();
         new Reminders().onReceive(a, new android.content.Intent(Reminders.ACTION_FIRE));
         new Reminders().onReceive(a, new android.content.Intent("android.intent.action.BOOT_COMPLETED"));

@@ -10,6 +10,10 @@
 - Nhắc sinh nhật, đám giỗ theo âm lịch hoặc dương lịch, tự đổi ngày mỗi năm, báo trước nhiều ngày
 - Các ngày lễ, Tết Việt Nam; nhắc mùng 1 và rằm
 - Sổ thu chi theo tháng, theo nhóm, có ngân sách
+- Sổ hiếu hỷ: ghi tiền mừng / phúng viếng theo từng gia đình, nhắc lần trước họ mừng mình bao nhiêu
+- Khóa mục Chi tiêu bằng mã PIN hoặc vân tay (bật/tắt trong Cài đặt)
+- Tiện ích "tờ lịch" ngoài màn hình chính (Android)
+- Chế độ chữ to cho người lớn tuổi
 - Ghi chú có ghim, màu giấy, tìm kiếm
 - Bản Android báo thông báo mỗi sáng, chạy không cần mạng, không thu thập dữ liệu
 

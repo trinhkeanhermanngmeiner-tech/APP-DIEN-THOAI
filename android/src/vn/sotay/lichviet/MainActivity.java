@@ -4,12 +4,17 @@ package vn.sotay.lichviet;
 import android.Manifest;
 import android.app.Activity;
 import android.content.ContentValues;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.hardware.biometrics.BiometricManager;
+import android.hardware.biometrics.BiometricPrompt;
+import android.hardware.fingerprint.FingerprintManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.CancellationSignal;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.view.View;
@@ -213,6 +218,70 @@ public class MainActivity extends Activity {
     }
 
     @Override
+    protected void onStop() {
+        super.onStop();
+        // Khóa lại mục Chi tiêu khi app chạy nền.
+        web.evaluateJavascript("window.sotayLock&&window.sotayLock()", null);
+    }
+
+    private void sendBiometricResult(boolean ok) {
+        web.evaluateJavascript("window.onBiometric&&window.onBiometric(" + ok + ")", null);
+    }
+
+    @SuppressWarnings("deprecation")
+    private boolean biometricAvailable() {
+        try {
+            if (Build.VERSION.SDK_INT >= 30) {
+                BiometricManager bm = getSystemService(BiometricManager.class);
+                return bm != null && bm.canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_WEAK) == BiometricManager.BIOMETRIC_SUCCESS;
+            }
+            if (Build.VERSION.SDK_INT == 29) {
+                BiometricManager bm = getSystemService(BiometricManager.class);
+                return bm != null && bm.canAuthenticate() == BiometricManager.BIOMETRIC_SUCCESS;
+            }
+            if (Build.VERSION.SDK_INT == 28) {
+                FingerprintManager fm = getSystemService(FingerprintManager.class);
+                return fm != null && fm.isHardwareDetected() && fm.hasEnrolledFingerprints();
+            }
+        } catch (Exception ignored) {
+        }
+        return false;
+    }
+
+    /** Hộp thoại vân tay / khuôn mặt của hệ thống (Android 9 trở lên). */
+    private void showBiometricPrompt() {
+        if (Build.VERSION.SDK_INT < 28) {
+            sendBiometricResult(false);
+            return;
+        }
+        try {
+            BiometricPrompt.Builder b = new BiometricPrompt.Builder(this)
+                    .setTitle("Mở khóa Chi tiêu")
+                    .setSubtitle("Dùng vân tay hoặc khuôn mặt")
+                    .setNegativeButton("Dùng mã PIN", getMainExecutor(), new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            sendBiometricResult(false);
+                        }
+                    });
+            if (Build.VERSION.SDK_INT >= 30) b.setAllowedAuthenticators(BiometricManager.Authenticators.BIOMETRIC_WEAK);
+            b.build().authenticate(new CancellationSignal(), getMainExecutor(), new BiometricPrompt.AuthenticationCallback() {
+                @Override
+                public void onAuthenticationSucceeded(BiometricPrompt.AuthenticationResult result) {
+                    sendBiometricResult(true);
+                }
+
+                @Override
+                public void onAuthenticationError(int code, CharSequence msg) {
+                    sendBiometricResult(false);
+                }
+            });
+        } catch (Exception e) {
+            sendBiometricResult(false);
+        }
+    }
+
+    @Override
     protected void onSaveInstanceState(Bundle out) {
         super.onSaveInstanceState(out);
         web.saveState(out);
@@ -297,6 +366,27 @@ public class MainActivity extends Activity {
                 public void run() {
                     navSpacer.setBackgroundColor(c);
                     setBarIcons(false, isLight(c));
+                }
+            });
+        }
+
+        @JavascriptInterface
+        public void setWidgetData(String json) {
+            Reminders.prefs(MainActivity.this).edit().putString("widget", json).apply();
+            LichWidget.refreshAll(MainActivity.this);
+        }
+
+        @JavascriptInterface
+        public boolean canBiometric() {
+            return biometricAvailable();
+        }
+
+        @JavascriptInterface
+        public void biometricAuth() {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    showBiometricPrompt();
                 }
             });
         }

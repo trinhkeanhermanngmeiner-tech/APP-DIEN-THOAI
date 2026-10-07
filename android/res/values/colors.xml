@@ -5,4 +5,8 @@
     <color name="bg">#EFEFEC</color>
     <color name="bg_dark">#0F0E0D</color>
     <color name="gold">#E3AE3F</color>
+    <color name="widget_surface">#FFFFFF</color>
+    <color name="widget_ink">#191715</color>
+    <color name="widget_gold">#8A5D07</color>
+    <color name="widget_red">#C2261F</color>
 </resources>
