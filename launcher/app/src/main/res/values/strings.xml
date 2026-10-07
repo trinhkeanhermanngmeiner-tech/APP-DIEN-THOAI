@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Aurora Launcher</string>
+    <string name="search_hint">Tìm ứng dụng…</string>
+    <string name="app_info">Thông tin ứng dụng</string>
+    <string name="uninstall">Gỡ cài đặt</string>
+    <string name="launch_failed">Không mở được ứng dụng</string>
+</resources>
