@@ -6,4 +6,10 @@
         <item name="android:windowBackground">@color/bg</item>
         <item name="android:colorAccent">@color/hero</item>
     </style>
+    <style name="QuickNote" parent="android:Theme.Material.Light.Dialog.NoActionBar">
+        <item name="android:windowMinWidthMinor">92%</item>
+        <item name="android:windowMinWidthMajor">70%</item>
+        <item name="android:colorAccent">@color/hero</item>
+        <item name="android:windowCloseOnTouchOutside">true</item>
+    </style>
 </resources>

@@ -252,6 +252,7 @@ textarea.in{min-height:200px;resize:vertical;line-height:1.55}
 .seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
 .toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
 .toggle input{width:22px;height:22px;accent-color:var(--jade)}
+.field label.toggle{font-size:15px;font-weight:400;color:var(--ink);text-transform:none;letter-spacing:0}
 .swatches{display:flex;gap:10px}
 .sw{width:34px;height:34px;border-radius:50%;border:2px solid var(--line);background:var(--surface)}
 .sw[aria-pressed="true"]{border-color:var(--ink);box-shadow:inset 0 0 0 3px var(--bg)}
@@ -503,7 +504,7 @@ const Store={
   mode:"local", data:{notes:{},events:{},txns:{},gifts:{}}, settings:{...DEFAULT_SETTINGS}, db:null, base:null,
   loadLocal(){try{let raw=null;if(NATIVE&&NATIVE.loadData)raw=NATIVE.loadData()||null;if(!raw)raw=lsGet("sotay.v1");
     if(raw){const o=JSON.parse(raw);this.data={notes:o.data?.notes||{},events:o.data?.events||{},txns:o.data?.txns||{},gifts:o.data?.gifts||{}};this.settings={...DEFAULT_SETTINGS,...(o.settings||{})}}}catch(e){}},
-  saveLocal(){const s=JSON.stringify({data:this.data,settings:this.settings});lsSet("sotay.v1",s);if(NATIVE&&NATIVE.saveData)try{NATIVE.saveData(s)}catch(e){}},
+  saveLocal(){const s=JSON.stringify({app:"so-tay-lich-viet",version:1,data:this.data,settings:this.settings});lsSet("sotay.v1",s);if(NATIVE&&NATIVE.saveData)try{NATIVE.saveData(s)}catch(e){}},
   async initCloud(){
     if(NATIVE||!window.claude||!window.claude.use)return;
     try{
@@ -626,6 +627,7 @@ function renderHome(){
     <div class="ring">${ring(B?mo/B:0,86,mo>B&&B?"var(--red)":"var(--gold)","rgba(255,255,255,.12)")}<span>${B?Math.round(mo/B*100)+"%":"—"}</span></div>
   </button>`}
   ${pinned.length?`<div class="sec"><h2>Ghi chú đã ghim</h2><button class="lnk" data-go="notes">Mở ghi chú</button></div><div class="notes">${pinned.map(noteCard).join("")}</div>`:""}
+  ${NATIVE&&NATIVE.driveStatus&&!driveInfo().linked&&!Store.list("events").length&&!Store.list("notes").length&&!Store.list("txns").length?`<div class="card"><div class="sec"><h2>Đã dùng app trước đây?</h2></div><p class="hint" style="margin-top:6px">Nếu bạn từng liên kết Google Drive, chọn lại tệp <b>SoTayLichViet-dulieu.json</b> để lấy lại toàn bộ ghi chú, ngày nhớ, chi tiêu.</p><div class="actions" style="margin-top:12px"><button class="btn red" data-act="driveRestore">Khôi phục từ Google Drive</button></div></div>`:""}
   ${Store.list("events").length?"":`<div class="card"><div class="sec"><h2>Bắt đầu từ gia đình</h2></div><p class="hint" style="margin-top:6px">Thêm sinh nhật người thân và ngày giỗ ông bà. App tự đổi ngày âm sang dương mỗi năm và nhắc trước cho bạn.</p><div class="actions" style="margin-top:12px"><button class="btn red" data-act="addEvent" data-type="birthday">+ Sinh nhật</button><button class="btn ghost" data-act="addEvent" data-type="death">+ Đám giỗ</button></div></div>`}
   </div>`;
 }
@@ -732,8 +734,8 @@ function renderNotes(){
 }
 
 /* ================= BẢNG NHẬP (sheet) ================= */
-function openSheet(html,onMount){const s=$("#sheet");s._onClose=null;s.dataset.secure="";s.innerHTML=`<div class="grab"></div>`+html;$("#scrim").hidden=false;onMount&&onMount(s)}
-function closeSheet(){const s=$("#sheet");if(s._onClose){const f=s._onClose;s._onClose=null;f()}$("#scrim").hidden=true;s.innerHTML=""}
+function openSheet(html,onMount){const s=$("#sheet");s._onClose=null;s.dataset.secure="";UI.settingsOpen=false;s.innerHTML=`<div class="grab"></div>`+html;$("#scrim").hidden=false;onMount&&onMount(s)}
+function closeSheet(){UI.settingsOpen=false;const s=$("#sheet");if(s._onClose){const f=s._onClose;s._onClose=null;f()}$("#scrim").hidden=true;s.innerHTML=""}
 $("#scrim").addEventListener("click",e=>{if(e.target.id==="scrim")closeSheet()});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("#scrim").hidden)closeSheet()});
 function segHTML(id,opts,val){return`<div class="seg" id="${id}">${opts.map(([k,n])=>`<button type="button" data-v="${k}" aria-pressed="${k===val}">${n}</button>`).join("")}</div>`}
@@ -864,8 +866,12 @@ function copyText(ta){const sel=()=>{ta.select();toast("Hãy bấm giữ để s
 function backupJSON(){return JSON.stringify({app:"so-tay-lich-viet",version:1,exported:new Date().toISOString(),settings:Store.settings,data:Store.data},null,1)}
 function importJSON(text){let o;try{o=JSON.parse(text)}catch(e){toast("Tệp sao lưu không đọc được.");return}
   if(!o||!o.data){toast("Tệp không phải bản sao lưu của Sổ Tay.");return}let n=0;
-  for(const kind of["notes","events","txns","gifts"])for(const it of Object.values(o.data[kind]||{})){if(it&&it.id){Store.put(kind,it);n++}}
-  if(o.settings)Store.setSettings(o.settings);toast("Đã nhập "+n+" mục");closeSheet()}
+  const kinds=["notes","events","txns","gifts"];
+  if(Store.mode==="db"){for(const kind of kinds)for(const it of Object.values(o.data[kind]||{})){if(it&&it.id){Store.put(kind,it);n++}}if(o.settings)Store.setSettings(o.settings)}
+  else{/* lưu một lần thay vì ghi tệp sau từng mục */
+    for(const kind of kinds){const add={};for(const it of Object.values(o.data[kind]||{}))if(it&&it.id){add[it.id]=it;n++}Store.data[kind]={...(Store.data[kind]||{}),...add}}
+    if(o.settings)Store.settings={...Store.settings,...o.settings};Store.saveLocal();lastWidgetKey="";scheduleRender()}
+  closeSheet();toast("Đã nhập "+n+" mục")}
 /* Lịch thông báo cho bản Android: danh sách lời nhắc theo ngày trong 400 ngày tới */
 function reminderList(){const t=todayJd(),out=[];
   for(const o of occurrences(t,t+400)){const lun=o.kind!=="month"?" ("+fmtLunar(o.jd)+")":"";
@@ -897,6 +903,7 @@ function settingsSheet(){
      ${lockOn()&&bioAvail?`<label class="toggle"><span>Mở khóa bằng vân tay / khuôn mặt</span><input type="checkbox" id="sBio" ${Store.settings.bioOn?"checked":""}></label>`:""}
      ${lockOn()?`<button class="btn ghost" id="sPin" type="button">Đổi mã PIN</button>`:""}
    </div>
+   ${NATIVE&&NATIVE.driveStatus?driveSectionHTML():""}
    <div class="field"><span class="lab">Sao lưu</span><div class="actions"><button class="btn" id="bkOut">Xuất sao lưu</button><button class="btn ghost" id="bkIn">Nhập sao lưu</button></div></div>
    <div id="bkArea"></div>
    ${NATIVE?"":`<button class="btn ghost block" data-act="ics">Xuất sang Lịch điện thoại (.ics)</button>`}
@@ -910,6 +917,7 @@ function settingsSheet(){
     wireSegs(root,(id,v)=>{if(id==="thm"){if(v==="auto")delete document.documentElement.dataset.theme;else document.documentElement.dataset.theme=v;lsSet("sotay.theme",v);syncNative()}});
     root.querySelector("#sHol").onchange=e=>Store.setSettings({showHolidays:e.target.checked});
     root.querySelector("#sMon").onchange=e=>Store.setSettings({monthly:e.target.checked});
+    wireDrive(root);UI.settingsOpen=true;
     root.querySelector("#sBig").onchange=e=>Store.setSettings({bigText:e.target.checked});
     root.querySelector("#sLock").onchange=e=>{if(e.target.checked){e.target.checked=false;setupPinSheet()}else{e.target.checked=true;requireUnlock(()=>{Store.setSettings({lockOn:false,pinHash:"",pinSalt:""});toast("Đã tắt khóa mục Chi tiêu")},"Nhập mã PIN để tắt khóa")}};
     const sb=root.querySelector("#sBio");if(sb)sb.onchange=e=>Store.setSettings({bioOn:e.target.checked});
@@ -931,6 +939,7 @@ document.addEventListener("click",e=>{
     if(["addEvent","addTxn","addNote","addGift"].includes(act)&&!$("#scrim").hidden)closeSheet();
     if(act==="addEvent")eventSheet(null,jd,a.dataset.type);else if(act==="addTxn")txnSheet(null,jd);else if(act==="addNote")noteSheet(null,jd?jdKey(jd):"");
     else if(act==="addGift")giftSheet(null);
+    else if(act==="driveRestore"){try{NATIVE.driveRestore()}catch(e){}}
     else if(act==="budget")budgetSheet();else if(act==="ics")exportICS();return}
   const g=e.target.closest("[data-go]");if(g){goTab(g.dataset.go);return}
   const ev=e.target.closest("[data-ev]");if(ev){const x=Store.data.events[ev.dataset.ev];if(x)eventSheet(x);return}
@@ -1107,6 +1116,35 @@ function calData(){const t=todayJd(),[,tm,ty]=jdToDate(t),start=jdFromDate(1,tm,
 let lastWidgetKey="";
 function syncWidget(){if(!NATIVE||!NATIVE.setWidgetData)return;const k=todayJd()+"|"+JSON.stringify(Store.data.events)+"|"+Store.settings.showHolidays+"|"+[...noteDateSet()].sort().join(",");
   if(k===lastWidgetKey)return;lastWidgetKey=k;try{NATIVE.setWidgetData(widgetData());if(NATIVE.setCalendarData)NATIVE.setCalendarData(calData())}catch(e){}}
+
+/* ================= ĐỒNG BỘ GOOGLE DRIVE (Android) ================= */
+function driveInfo(){try{return JSON.parse(NATIVE.driveStatus())}catch(e){return{linked:false}}}
+const fmtStamp=ms=>{const d=new Date(ms);return pad(d.getHours())+":"+pad(d.getMinutes())+" ngày "+pad(d.getDate())+"/"+pad(d.getMonth()+1)};
+function driveSectionHTML(){const d=driveInfo();
+  return`<div class="field"><span class="lab">Google Drive</span><div class="card">${d.linked
+    ?`<b>Đang tự lưu vào ${esc(d.provider||"Google Drive")}</b><p class="hint" style="margin-top:4px">Tệp: ${esc(d.name||"")}<br>${d.last?"Lưu gần nhất lúc "+fmtStamp(d.last):"Chưa lưu lần nào"}${d.err?`<br><b style="color:var(--red)">${esc(d.err)}</b>`:""}</p>
+      <div class="actions" style="margin-top:10px"><button class="btn" id="drNow" type="button">Lưu ngay</button><button class="btn ghost" id="drOff" type="button">Ngắt liên kết</button></div>`
+    :`<p class="hint">Liên kết một tệp trên Google Drive: mọi thay đổi sẽ tự lưu lên đó sau vài giây. Khi cài lại app hoặc đổi máy, bấm "Khôi phục" và chọn lại tệp này để lấy lại toàn bộ dữ liệu.</p>
+      <div class="actions" style="margin-top:10px"><button class="btn red" id="drLink" type="button">Liên kết Google Drive</button><button class="btn ghost" id="drRestore" type="button">Khôi phục từ Drive</button></div>
+      <p class="hint" style="margin-top:8px">Trong cửa sổ chọn tệp, chạm ☰ rồi chọn <b>Drive</b>.</p>`}</div></div>`}
+function wireDrive(root){const on=(id,f)=>{const b=root.querySelector(id);if(b)b.onclick=f};
+  on("#drLink",()=>requireUnlock(()=>{try{NATIVE.driveLink()}catch(e){}},"Nhập mã PIN để liên kết"));
+  on("#drRestore",()=>{try{NATIVE.driveRestore()}catch(e){}});
+  on("#drNow",()=>{try{NATIVE.driveSaveNow();toast("Đang lưu lên Drive…")}catch(e){}});
+  on("#drOff",()=>{try{NATIVE.driveUnlink()}catch(e){}toast("Đã ngắt liên kết Google Drive");settingsSheet()})}
+window.onDrive=function(st){if(typeof st==="string")try{st=JSON.parse(st)}catch(e){st={}}
+  if(st.err)toast(st.err);else if(st.linked)toast("Đã lưu dữ liệu lên "+(st.provider||"tệp đã chọn"));
+  if(UI.settingsOpen)settingsSheet();else scheduleRender()};
+window.onDriveRestore=function(text){let o;try{o=JSON.parse(text)}catch(e){toast("Tệp này không đọc được.");return}
+  if(!o||!o.data){toast("Tệp này không phải dữ liệu của Sổ Tay Lịch Việt.");return}
+  const cnt=k=>Object.keys(o.data[k]||{}).length,empty=["notes","events","txns","gifts"].every(k=>!Store.list(k).length);
+  if(empty){importJSON(text);toast("Đã khôi phục từ Drive. Từ giờ dữ liệu sẽ tự lưu vào tệp này.");return}
+  openSheet(`<h3>Khôi phục từ Google Drive</h3><p class="hint" style="font-size:14px">Tệp có <b>${cnt("events")}</b> ngày nhớ, <b>${cnt("notes")}</b> ghi chú, <b>${cnt("txns")}</b> khoản thu chi và <b>${cnt("gifts")}</b> ghi chép hiếu hỷ. Dữ liệu sẽ được gộp với dữ liệu đang có trên máy; mục trùng nhau lấy theo tệp.</p>
+    <div class="actions"><button class="btn red" id="rsOk">Gộp dữ liệu</button><button class="btn ghost" id="rsNo">Để sau</button></div>`,root=>{
+    root.querySelector("#rsOk").onclick=()=>importJSON(text);root.querySelector("#rsNo").onclick=closeSheet})};
+/* Ghi chú vừa được sửa từ tiện ích → nạp lại; mở một ghi chú từ tiện ích */
+window.sotayReload=function(){if(Store.mode==="db")return;Store.loadLocal();lastWidgetKey="";render()};
+window.sotayOpenNote=function(id){if(!$("#scrim").hidden)closeSheet();goTab("notes");const n=Store.data.notes[id];if(n)noteSheet(n)};
 
 /* ================= KHỞI ĐỘNG ================= */
 {const th=lsGet("sotay.theme");if(th==="light"||th==="dark")document.documentElement.dataset.theme=th}

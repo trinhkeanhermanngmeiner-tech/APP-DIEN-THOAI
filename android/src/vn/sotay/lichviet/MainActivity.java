@@ -43,6 +43,9 @@ import java.nio.charset.StandardCharsets;
 public class MainActivity extends Activity {
     private static final int REQ_FILE = 41;
     private static final int REQ_NOTIFY = 42;
+    private static final int REQ_DRIVE_CREATE = 43;
+    private static final int REQ_DRIVE_OPEN = 44;
+    private long seenExtWrite;
     private WebView web;
     private View statusSpacer, navSpacer;
     private ValueCallback<Uri[]> fileCallback;
@@ -129,7 +132,8 @@ public class MainActivity extends Activity {
             }
         });
 
-        pendingDay = dayFromIntent(getIntent());
+        pendingDay = linkFromIntent(getIntent());
+        seenExtWrite = Reminders.prefs(this).getLong("extWrite", 0);
         if (state != null) web.restoreState(state);
         else web.loadUrl("file:///android_asset/www/index.html");
 
@@ -226,25 +230,53 @@ public class MainActivity extends Activity {
         handleBack();
     }
 
-    /** Ngày được chọn từ tiện ích lịch tháng (sotay://ngay/2026-10-07), hoặc null. */
-    private static String dayFromIntent(Intent i) {
+    /**
+     * Liên kết từ tiện ích: sotay://ngay/2026-10-07 mở bảng của ngày; sotay://ghichu/<mã> mở ghi chú
+     * (sotay://ghichu/ mở mục Ghi chú). Trả về đoạn JavaScript cần chạy, hoặc null.
+     */
+    static String linkFromIntent(Intent i) {
         Uri u = i == null ? null : i.getData();
         if (u == null || !"sotay".equals(u.getScheme())) return null;
-        String d = u.getLastPathSegment();
-        return d != null && d.matches("\\d{4}-\\d{2}-\\d{2}") ? d : null;
+        String kind = u.getHost(), arg = u.getLastPathSegment();
+        if ("ngay".equals(kind) && arg != null && arg.matches("\\d{4}-\\d{2}-\\d{2}"))
+            return "window.sotayOpenDay&&window.sotayOpenDay('" + arg + "')";
+        if ("ghichu".equals(kind))
+            return "window.sotayOpenNote&&window.sotayOpenNote('" + (arg != null && arg.matches("[a-z0-9]{1,40}") ? arg : "") + "')";
+        return null;
     }
 
     private void openPendingDay() {
         if (!pageReady || pendingDay == null) return;
-        web.evaluateJavascript("window.sotayOpenDay&&window.sotayOpenDay('" + pendingDay + "')", null);
+        web.evaluateJavascript(pendingDay, null);
         pendingDay = null;
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Ghi chú có thể vừa được sửa từ tiện ích: nạp lại dữ liệu vào giao diện.
+        long ext = Reminders.prefs(this).getLong("extWrite", 0);
+        if (ext != seenExtWrite) {
+            seenExtWrite = ext;
+            if (pageReady) web.evaluateJavascript("window.sotayReload&&window.sotayReload()", null);
+        }
+    }
+
+    private void sendDrive() {
+        final String st = DriveSync.status(this);
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                web.evaluateJavascript("window.onDrive&&window.onDrive(" + st + ")", null);
+            }
+        });
     }
 
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         setIntent(intent);
-        String d = dayFromIntent(intent);
+        String d = linkFromIntent(intent);
         if (d != null) {
             pendingDay = d;
             openPendingDay();
@@ -324,6 +356,35 @@ public class MainActivity extends Activity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        if ((requestCode == REQ_DRIVE_CREATE || requestCode == REQ_DRIVE_OPEN) && resultCode == RESULT_OK && data != null && data.getData() != null) {
+            final Uri u = data.getData();
+            final boolean restore = requestCode == REQ_DRIVE_OPEN;
+            DriveSync.IO.execute(new Runnable() {
+                @Override
+                public void run() {
+                    if (restore) {
+                        try {
+                            final String text = DriveSync.read(MainActivity.this, u);
+                            DriveSync.link(MainActivity.this, u);
+                            final String quoted = org.json.JSONObject.quote(text);
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    web.evaluateJavascript("window.onDriveRestore&&window.onDriveRestore(" + quoted + ")", null);
+                                }
+                            });
+                        } catch (Exception e) {
+                            Reminders.prefs(MainActivity.this).edit().putString("driveErr", "Không đọc được tệp: " + e.getMessage()).apply();
+                        }
+                    } else {
+                        DriveSync.link(MainActivity.this, u);
+                        DriveSync.writeNow(MainActivity.this, NoteStore.read(MainActivity.this));
+                    }
+                    sendDrive();
+                }
+            });
+            return;
+        }
         if (requestCode == REQ_FILE && fileCallback != null) {
             Uri[] result = null;
             if (resultCode == RESULT_OK && data != null && data.getData() != null) result = new Uri[]{data.getData()};
@@ -332,40 +393,63 @@ public class MainActivity extends Activity {
         }
     }
 
-    private File dataFile() {
-        return new File(getFilesDir(), "so-tay.json");
-    }
-
     /** Các hàm gọi được từ JavaScript qua window.AndroidBridge. */
     private class Bridge {
         @JavascriptInterface
         public String loadData() {
-            File f = dataFile();
-            if (!f.exists()) return "";
-            try (FileInputStream in = new FileInputStream(f)) {
-                byte[] buf = new byte[(int) f.length()];
-                int off = 0;
-                while (off < buf.length) {
-                    int n = in.read(buf, off, buf.length - off);
-                    if (n < 0) break;
-                    off += n;
-                }
-                return new String(buf, 0, off, StandardCharsets.UTF_8);
-            } catch (Exception e) {
-                return "";
-            }
+            return NoteStore.read(MainActivity.this);
         }
 
         @JavascriptInterface
         public void saveData(String json) {
-            File tmp = new File(getFilesDir(), "so-tay.json.tmp");
-            try (FileOutputStream out = new FileOutputStream(tmp)) {
-                out.write(json.getBytes(StandardCharsets.UTF_8));
-                out.getFD().sync();
-            } catch (Exception e) {
-                return;
-            }
-            tmp.renameTo(dataFile());
+            if (NoteStore.write(MainActivity.this, json)) NoteStore.changed(MainActivity.this, json, false);
+        }
+
+        @JavascriptInterface
+        public String driveStatus() {
+            return DriveSync.status(MainActivity.this);
+        }
+
+        /** Chọn nơi lưu (thường là Google Drive) qua trình chọn tệp của Android. */
+        @JavascriptInterface
+        public void driveLink() {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Intent i = new Intent(Intent.ACTION_CREATE_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE)
+                            .setType("application/json").putExtra(Intent.EXTRA_TITLE, "SoTayLichViet-dulieu.json");
+                    try { startActivityForResult(i, REQ_DRIVE_CREATE); } catch (Exception e) { sendDrive(); }
+                }
+            });
+        }
+
+        @JavascriptInterface
+        public void driveRestore() {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Intent i = new Intent(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType("*/*")
+                            .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                                    | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
+                    try { startActivityForResult(i, REQ_DRIVE_OPEN); } catch (Exception e) { sendDrive(); }
+                }
+            });
+        }
+
+        @JavascriptInterface
+        public void driveSaveNow() {
+            DriveSync.IO.execute(new Runnable() {
+                @Override
+                public void run() {
+                    DriveSync.writeNow(MainActivity.this, NoteStore.read(MainActivity.this));
+                    sendDrive();
+                }
+            });
+        }
+
+        @JavascriptInterface
+        public void driveUnlink() {
+            DriveSync.unlink(MainActivity.this);
         }
 
         @JavascriptInterface

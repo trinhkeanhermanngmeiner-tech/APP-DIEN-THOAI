@@ -14,6 +14,8 @@
 - Khóa mục Chi tiêu bằng mã PIN hoặc vân tay (bật/tắt trong Cài đặt)
 - Hai tiện ích ngoài màn hình chính (Android): "Tờ lịch (gọn)" 2×2 và "Lịch tháng" 4×4 (ngày âm dương, ngày lễ, ngày nhớ, ghi chú; đổi tháng; chạm vào ngày để ghi chú nhanh)
 - Ghi chú gắn với ngày, hiện trên lịch
+- Tiện ích "Ghi chú" 3×3: danh sách cuộn, chạm để sửa ngay trong cửa sổ nhỏ trên màn hình chính, ＋ để viết mới
+- Tự lưu dữ liệu vào một tệp trên Google Drive; cài lại app thì "Khôi phục từ Google Drive"
 - Chế độ chữ to cho người lớn tuổi
 - Ghi chú có ghim, màu giấy, tìm kiếm
 - Bản Android báo thông báo mỗi sáng, chạy không cần mạng, không thu thập dữ liệu

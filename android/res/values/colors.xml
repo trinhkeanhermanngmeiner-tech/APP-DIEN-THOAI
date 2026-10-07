@@ -13,4 +13,10 @@
     <color name="widget_offday">#FCE8E6</color>
     <color name="widget_note">#2F5DA8</color>
     <color name="widget_jade">#13705A</color>
+    <color name="note_w">#F4F4F1</color>
+    <color name="note_y">#FFF1BF</color>
+    <color name="note_r">#FFDCD6</color>
+    <color name="note_g">#D6F0DF</color>
+    <color name="note_b">#D8E6FB</color>
+    <color name="note_v">#E9DDF7</color>
 </resources>

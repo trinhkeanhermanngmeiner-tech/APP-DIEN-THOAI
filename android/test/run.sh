@@ -6,4 +6,4 @@ cd "$(dirname "$0")"
 mkdir -p target
 sed 's#package="vn.sotay.lichviet">#package="vn.sotay.lichviet">\n    <uses-sdk android:minSdkVersion="26" android:targetSdkVersion="36" />#' ../AndroidManifest.xml > target/merged-manifest.xml
 mvn -B -q test 2>&1 | grep -v JAVA_TOOL_OPTIONS | grep -E "OK sdk|Tests run|ERROR|Exception|^\s+at vn\." || true
-grep -q 'errors="0"' target/surefire-reports/TEST-vn.sotay.lichviet.LaunchTest.xml && grep -q 'failures="0"' target/surefire-reports/TEST-vn.sotay.lichviet.LaunchTest.xml && echo "KẾT QUẢ: mở app thành công trên mọi phiên bản Android đã thử"
+grep -q 'errors="0"' target/surefire-reports/TEST-vn.sotay.lichviet.LaunchTest.xml && ! grep -L -E "errors=.0.*failures=.0.|failures=.0.*errors=.0." target/surefire-reports/TEST-*.xml | grep -q . && echo "KẾT QUẢ: mọi kiểm tra đều đạt"
