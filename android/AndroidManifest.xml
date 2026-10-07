@@ -32,7 +32,13 @@
                 <action android:name="android.intent.action.TIMEZONE_CHANGED" />
             </intent-filter>
         </receiver>
-        <receiver android:name=".LichWidget" android:exported="true" android:label="Tờ lịch">
+        <receiver android:name=".LichMonthWidget" android:exported="true" android:label="Lịch tháng">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_thang_info" />
+        </receiver>
+        <receiver android:name=".LichWidget" android:exported="true" android:label="Tờ lịch (gọn)">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>

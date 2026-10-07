@@ -50,6 +50,22 @@ public class LaunchTest {
         int wid = shadowOf(wm).createWidget(LichWidget.class, R.layout.widget_lich);
         new LichWidget().onUpdate(a, wm, new int[]{wid});
         LichWidget.refreshAll(a);
+        // Tiện ích lịch tháng: dữ liệu, dựng bố cục, chuyển tháng
+        call(b, "setCalendarData", "{\"days\":{\"" + today + "\":\"27|en\"},\"months\":{}}");
+        android.view.View mv = LichMonthWidget.build(a).apply(a, new android.widget.FrameLayout(a));
+        System.out.println("month: " + ((android.widget.TextView) mv.findViewById(R.id.m_title)).getText());
+        int mid = shadowOf(wm).createWidget(LichMonthWidget.class, R.layout.widget_thang);
+        new LichMonthWidget().onReceive(a, new android.content.Intent(LichMonthWidget.ACTION_NEXT));
+        new LichMonthWidget().onReceive(a, new android.content.Intent(LichMonthWidget.ACTION_PREV));
+        new LichMonthWidget().onReceive(a, new android.content.Intent(LichMonthWidget.ACTION_NOW));
+        // Mở app từ một ô ngày của tiện ích: chờ trang tải xong rồi gọi sotayOpenDay
+        android.content.Intent dayIntent = new android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse("sotay://ngay/" + today));
+        Method onNew = MainActivity.class.getDeclaredMethod("onNewIntent", android.content.Intent.class); onNew.setAccessible(true); onNew.invoke(a, dayIntent);
+        shadowOf(web).getWebViewClient().onPageFinished(web, "file:///android_asset/www/index.html");
+        onNew.invoke(a, dayIntent);
+        String js = shadowOf(web).getLastEvaluatedJavascript();
+        System.out.println("deeplink js: " + js);
+        if (js == null || !js.contains("sotayOpenDay('" + today + "')")) throw new AssertionError("không mở được ngày từ tiện ích");
         // Vân tay: kiểm tra có/không và gọi hộp thoại (Robolectric không có cảm biến thật)
         System.out.println("canBiometric=" + call(b, "canBiometric"));
         try { call(b, "biometricAuth"); org.robolectric.shadows.ShadowLooper.idleMainLooper(); System.out.println("biometricAuth: không lỗi"); }

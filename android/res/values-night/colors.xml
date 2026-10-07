@@ -4,4 +4,8 @@
     <color name="widget_ink">#F1ECE6</color>
     <color name="widget_gold">#F0C062</color>
     <color name="widget_red">#FF6B5E</color>
+    <color name="widget_muted">#A39C94</color>
+    <color name="widget_offday">#3B1C19</color>
+    <color name="widget_note">#7EA6EE</color>
+    <color name="widget_jade">#4CC5A2</color>
 </resources>

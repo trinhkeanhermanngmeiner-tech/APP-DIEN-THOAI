@@ -46,6 +46,8 @@ public class MainActivity extends Activity {
     private WebView web;
     private View statusSpacer, navSpacer;
     private ValueCallback<Uri[]> fileCallback;
+    private String pendingDay;
+    private boolean pageReady;
 
     @Override
     protected void onCreate(Bundle state) {
@@ -102,6 +104,12 @@ public class MainActivity extends Activity {
                 try { startActivity(new Intent(Intent.ACTION_VIEW, u)); } catch (Exception ignored) { }
                 return true;
             }
+
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                pageReady = true;
+                openPendingDay();
+            }
         });
         web.setWebChromeClient(new WebChromeClient() {
             @Override
@@ -121,6 +129,7 @@ public class MainActivity extends Activity {
             }
         });
 
+        pendingDay = dayFromIntent(getIntent());
         if (state != null) web.restoreState(state);
         else web.loadUrl("file:///android_asset/www/index.html");
 
@@ -215,6 +224,31 @@ public class MainActivity extends Activity {
     @SuppressWarnings("deprecation")
     public void onBackPressed() {
         handleBack();
+    }
+
+    /** Ngày được chọn từ tiện ích lịch tháng (sotay://ngay/2026-10-07), hoặc null. */
+    private static String dayFromIntent(Intent i) {
+        Uri u = i == null ? null : i.getData();
+        if (u == null || !"sotay".equals(u.getScheme())) return null;
+        String d = u.getLastPathSegment();
+        return d != null && d.matches("\\d{4}-\\d{2}-\\d{2}") ? d : null;
+    }
+
+    private void openPendingDay() {
+        if (!pageReady || pendingDay == null) return;
+        web.evaluateJavascript("window.sotayOpenDay&&window.sotayOpenDay('" + pendingDay + "')", null);
+        pendingDay = null;
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        String d = dayFromIntent(intent);
+        if (d != null) {
+            pendingDay = d;
+            openPendingDay();
+        }
     }
 
     @Override
@@ -374,6 +408,12 @@ public class MainActivity extends Activity {
         public void setWidgetData(String json) {
             Reminders.prefs(MainActivity.this).edit().putString("widget", json).apply();
             LichWidget.refreshAll(MainActivity.this);
+        }
+
+        @JavascriptInterface
+        public void setCalendarData(String json) {
+            Reminders.prefs(MainActivity.this).edit().putString("cal", json).apply();
+            LichMonthWidget.refreshAll(MainActivity.this);
         }
 
         @JavascriptInterface

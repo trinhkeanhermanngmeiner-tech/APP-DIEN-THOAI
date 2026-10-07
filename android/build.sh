@@ -7,7 +7,7 @@ set -euo pipefail
 cd "$(dirname "$0")"
 ROOT=$(pwd); T=$ROOT/.tools; OUT=$ROOT/build; DIST=$ROOT/../dist
 # Tên phiên bản giữ 1.0; mã phiên bản (VERSION_CODE) vẫn phải tăng mỗi lần phát hành để Android/Google Play cho cập nhật.
-VERSION_CODE=${VERSION_CODE:-5}; VERSION_NAME=${VERSION_NAME:-1.0}; API=36
+VERSION_CODE=${VERSION_CODE:-6}; VERSION_NAME=${VERSION_NAME:-1.0}; API=36
 
 mkdir -p "$T"
 fetch() { # url tên-tệp
@@ -27,6 +27,7 @@ for p in be-vietnam-pro bricolage-grotesque; do
   [ -d "$T/fonts/$p/package" ] || (mkdir -p "$T/fonts/$p" && cd "$T/fonts/$p" && npm pack "@fontsource/$p@5.3.0" --silent >/dev/null && tar xzf ./*.tgz && rm ./*.tgz)
 done
 
+python3 buildtools/gen_month_widget.py >/dev/null
 rm -rf "$OUT"; mkdir -p "$OUT/assets/www" "$OUT/gen" "$OUT/classes" "$OUT/signer" "$OUT/bundle/base/manifest" "$OUT/bundle/base/dex" "$DIST"
 python3 buildtools/prepare_web.py ../so-tay/index.html "$T/fonts" "$OUT/assets/www"
 

@@ -9,4 +9,8 @@
     <color name="widget_ink">#191715</color>
     <color name="widget_gold">#8A5D07</color>
     <color name="widget_red">#C2261F</color>
+    <color name="widget_muted">#6B6762</color>
+    <color name="widget_offday">#FCE8E6</color>
+    <color name="widget_note">#2F5DA8</color>
+    <color name="widget_jade">#13705A</color>
 </resources>

@@ -12,7 +12,8 @@
 - Sổ thu chi theo tháng, theo nhóm, có ngân sách
 - Sổ hiếu hỷ: ghi tiền mừng / phúng viếng theo từng gia đình, nhắc lần trước họ mừng mình bao nhiêu
 - Khóa mục Chi tiêu bằng mã PIN hoặc vân tay (bật/tắt trong Cài đặt)
-- Tiện ích "tờ lịch" ngoài màn hình chính (Android)
+- Hai tiện ích ngoài màn hình chính (Android): "Tờ lịch (gọn)" 2×2 và "Lịch tháng" 4×4 (ngày âm dương, ngày lễ, ngày nhớ, ghi chú; đổi tháng; chạm vào ngày để ghi chú nhanh)
+- Ghi chú gắn với ngày, hiện trên lịch
 - Chế độ chữ to cho người lớn tuổi
 - Ghi chú có ghim, màu giấy, tìm kiếm
 - Bản Android báo thông báo mỗi sáng, chạy không cần mạng, không thu thập dữ liệu

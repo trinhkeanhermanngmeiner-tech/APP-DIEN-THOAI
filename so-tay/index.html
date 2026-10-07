@@ -122,7 +122,8 @@ main{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;p
 .wk.now .d{color:var(--gold)}
 .pips{display:flex;gap:2px;height:4px;margin-top:2px}
 .pips i{width:4px;height:4px;border-radius:50%;background:var(--jade)}
-.pips i.h{background:var(--red)} .pips i.m{background:var(--gold)}
+.pips i.h{background:var(--red)} .pips i.m{background:var(--gold)} .pips i.n{background:var(--c4)}
+.notedate{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;background:rgba(127,127,127,.16);margin-bottom:6px}
 
 /* thẻ đếm ngược trượt ngang */
 .rail{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 -16px;padding:2px 16px 8px;scrollbar-width:none}
@@ -587,6 +588,9 @@ function occRow(o,t,showBadge=true){const n=o.jd-t;const remind=o.ev&&o.ev.remin
   const badge=showBadge?`<span class="badge ${n===0?"today":remind||n<=3?"soon":""}">${relDays(n)}</span>`:"";
   const sub=fmtDate(o.jd)+" · "+WD[weekday(o.jd)]+(o.kind!=="month"?" · "+fmtLunar(o.jd):"");
   return`<button class="item" ${o.ev?`data-ev="${o.ev.id}"`:""}>${kindDot(o)}<div class="txt"><div class="t">${esc(o.title)}</div><div class="s">${sub}</div></div>${badge}</button>`}
+const notesOn=key=>Store.list("notes").filter(n=>n.date===key).sort((a,b)=>b.updated-a.updated);
+const noteDateSet=()=>new Set(Store.list("notes").filter(n=>n.date).map(n=>n.date));
+function noteRow(n){const first=(n.title||n.body||"").split("\n")[0];return`<button class="item" data-note="${n.id}"><span class="dot" style="background:var(--n-${n.color||"b"});color:var(--ink)">${ICON_NOTE.replace("<svg",'<svg style="width:20px;height:20px"')}</span><div class="txt"><div class="t">${esc(first||"(Ghi chú trống)")}</div><div class="s">${esc((n.title?n.body:n.body.split("\n").slice(1).join(" ")).slice(0,80))}</div></div></button>`}
 function renderHome(){
   const t=todayJd(),[d,m,y]=jdToDate(t),l=lunarOfJd(t),wd=weekday(t);
   const todays=occurrences(t,t);
@@ -596,9 +600,9 @@ function renderHome(){
      <div class="moonbox">${moonSVG(l.d,64)}<div class="ld">${l.d}</div><div class="lm">tháng ${LMONTH[l.m]}${l.leap?" nhuận":""}<br>năm ${canChiYear(l.y)}</div></div>
    </div>
    <div class="hchips">${todays.map(o=>`<span class="hchip gold">${esc(o.title)}</span>`).join("")}<span class="hchip">Ngày ${canChiDay(t)}</span><span class="hchip">Tháng ${canChiMonth(l.m,l.y)}</span></div><div style="height:22px"></div>`;
-  const mon=t-((wd+6)%7);const wocc=occurrences(mon,mon+6);
+  const mon=t-((wd+6)%7),nds=noteDateSet();const wocc=occurrences(mon,mon+6);
   let week="";for(let i=0;i<7;i++){const jd=mon+i,os=wocc.filter(o=>o.jd===jd),ll=lunarOfJd(jd);
-    const pips=[...new Set(os.map(o=>o.kind==="hol"?"h":o.kind==="month"?"m":"e"))].map(c=>`<i class="${c==="e"?"":c}"></i>`).join("");
+    const pips=[...new Set(os.map(o=>o.kind==="hol"?"h":o.kind==="month"?"m":"e").concat(nds.has(jdKey(jd))?["n"]:[]))].map(c=>`<i class="${c==="e"?"":c}"></i>`).join("");
     week+=`<button class="wk ${weekday(jd)===0?"sun":""} ${jd===t?"now":""}" data-day="${jd}"><span class="w">${WDS[weekday(jd)]}</span><span class="d">${jdToDate(jd)[0]}</span><span class="l">${ll.d===1?ll.d+"/"+ll.m:ll.d}</span><span class="pips">${pips}</span></button>`}
   const upcoming=occurrences(t+1,t+60).filter(o=>o.kind!=="month"||o.jd-t<=16).slice(0,10);
   const alerts=occurrences(t,t+30,{noHol:1,noMonthly:1}).filter(o=>o.ev&&o.jd-t<=(o.ev.remind??0));
@@ -635,22 +639,23 @@ function renderCal(){
   $("#heroBody").innerHTML=`<div class="mnav"><button class="hbtn" data-cal="-1" aria-label="Tháng trước">${ICON_CHEV_L}</button>
     <div class="t"><b>Tháng ${M}, ${Y}</b><span>Âm lịch ${lFirst.d}/${lFirst.m} – ${lLast.d}/${lLast.m} · ${canChiYear(lLast.y)}</span></div>
     <button class="hbtn" data-cal="1" aria-label="Tháng sau">${ICON_CHEV_R}</button></div><div style="height:24px"></div>`;
+  const nds=noteDateSet();
   let g=["T2","T3","T4","T5","T6","T7","CN"].map((w,i)=>`<div class="wh ${i===6?"sun":""}">${w}</div>`).join("");
   for(let i=0;i<cells;i++){const jd=start+i,[d,m]=jdToDate(jd),l=lunarOfJd(jd),os=by[jd]||[];
-    const pips=[...new Set(os.map(o=>o.kind==="hol"?"h":o.kind==="month"?"m":"e"))].filter(c=>c!=="m").map(c=>`<i class="${c==="e"?"":c}"></i>`).join("");
+    const pips=[...new Set(os.map(o=>o.kind==="hol"?"h":o.kind==="month"?"m":"e").concat(nds.has(jdKey(jd))?["n"]:[]))].filter(c=>c!=="m").map(c=>`<i class="${c==="e"?"":c}"></i>`).join("");
     const key=l.d===1||l.d===15;
     g+=`<button class="day ${m!==M?"out":""} ${weekday(jd)===0?"sun":""} ${os.some(o=>o.off)?"off":""} ${jd===t?"today":""} ${jd===UI.selJd?"sel":""}" data-jd="${jd}" aria-label="${fmtDate(jd)}, ${l.d}/${l.m} âm">
       <span class="sd">${d}</span><span class="lu ${key?"key":""}">${key?moonSVG(l.d,9,"currentColor","rgba(127,127,127,.3)"):""}${l.d===1?l.d+"/"+l.m:l.d}</span><span class="pips">${pips}</span></button>`}
-  const s=UI.selJd,sl=lunarOfJd(s),so=occurrences(s,s),skey=jdKey(s);
+  const s=UI.selJd,sl=lunarOfJd(s),so=occurrences(s,s),skey=jdKey(s),sn=notesOn(skey);
   const stx=Store.list("txns").filter(x=>x.date===skey);
   $("#v-cal").innerHTML=`
   <div class="card calcard"><div class="grid7" id="calGrid">${g}</div></div>
   <div class="view">
-  <div class="legend"><span><i style="background:var(--red)"></i>Ngày lễ</span><span><i style="background:var(--jade)"></i>Ngày nhớ</span><span><i style="background:var(--gold)"></i>Mùng 1, rằm</span><button class="lnk" data-cal="today" style="margin-left:auto">Về hôm nay</button></div>
+  <div class="legend"><span><i style="background:var(--red)"></i>Ngày lễ</span><span><i style="background:var(--jade)"></i>Ngày nhớ</span><span><i style="background:var(--gold)"></i>Mùng 1, rằm</span><span><i style="background:var(--c4)"></i>Ghi chú</span><button class="lnk" data-cal="today" style="margin-left:auto">Về hôm nay</button></div>
   <div class="card">
     <div class="dayhead"><div class="bn">${jdToDate(s)[0]}</div><div class="tt"><b>${WD[weekday(s)]}, ${fmtDate(s)}</b><span>Ngày ${sl.d} tháng ${LMONTH[sl.m]}${sl.leap?" nhuận":""} năm ${canChiYear(sl.y)}<br>Ngày ${canChiDay(s)} · tháng ${canChiMonth(sl.m,sl.y)}</span></div></div>
-    <div class="list" style="margin-top:8px">${so.length||stx.length?so.map(o=>occRow(o,s,false)).join("")+(isLocked()&&stx.length?`<button class="item" data-go="money">${ICON_LOCK.replace("<svg",'<svg style="width:40px;height:40px;padding:8px;border-radius:14px;background:var(--surface2);color:var(--muted)"')}<div class="txt"><div class="t">${stx.length} khoản thu chi</div><div class="s">Đang khóa · chạm để mở</div></div></button>`:stx.map(txRow).join("")):`<div class="empty">Ngày này chưa có gì.</div>`}</div>
-    <div class="actions" style="margin-top:10px"><button class="btn red" data-act="addEvent" data-jd="${s}">+ Ngày nhớ</button><button class="btn ghost" data-act="addTxn" data-jd="${s}">+ Chi tiêu</button></div>
+    <div class="list" style="margin-top:8px">${so.length||stx.length||sn.length?so.map(o=>occRow(o,s,false)).join("")+sn.map(noteRow).join("")+(isLocked()&&stx.length?`<button class="item" data-go="money">${ICON_LOCK.replace("<svg",'<svg style="width:40px;height:40px;padding:8px;border-radius:14px;background:var(--surface2);color:var(--muted)"')}<div class="txt"><div class="t">${stx.length} khoản thu chi</div><div class="s">Đang khóa · chạm để mở</div></div></button>`:stx.map(txRow).join("")):`<div class="empty">Ngày này chưa có gì.</div>`}</div>
+    <div class="actions" style="margin-top:10px"><button class="btn red" data-act="addNote" data-jd="${s}">+ Ghi chú</button><button class="btn ghost" data-act="addEvent" data-jd="${s}">+ Ngày nhớ</button><button class="btn ghost" data-act="addTxn" data-jd="${s}">+ Chi tiêu</button></div>
   </div>
   <div class="card">
     <div class="sec"><h2>Đổi ngày âm ↔ dương</h2></div>
@@ -716,7 +721,7 @@ function renderMoney(){
 function daysLeft(Y,M){const[d,m,y]=jdToDate(todayJd());const dim=jdToDate(jdFromDate(1,M%12+1,M===12?Y+1:Y)-1)[0];if(y===Y&&m===M)return dim-d+1;if(Y*12+M<y*12+m)return 0;return dim}
 
 /* ---------- Ghi chú ---------- */
-function noteCard(n){const d=new Date(n.updated);return`<button class="note ${n.color?"c-"+n.color:""}" data-note="${n.id}">${n.title?`<div class="t">${esc(n.title)}</div>`:""}<div class="b">${esc(n.body)}</div><div class="d"><span>${pad(d.getDate())}/${pad(d.getMonth()+1)} · ${pad(d.getHours())}:${pad(d.getMinutes())}</span><span>${n.pinned?"Đã ghim":""}</span></div></button>`}
+function noteCard(n){const d=new Date(n.updated);return`<button class="note ${n.color?"c-"+n.color:""}" data-note="${n.id}">${n.date?`<span class="notedate">Ngày ${fmtDate(keyJd(n.date))}</span>`:""}${n.title?`<div class="t">${esc(n.title)}</div>`:""}<div class="b">${esc(n.body)}</div><div class="d"><span>${pad(d.getDate())}/${pad(d.getMonth()+1)} · ${pad(d.getHours())}:${pad(d.getMinutes())}</span><span>${n.pinned?"Đã ghim":""}</span></div></button>`}
 function renderNotes(){
   const q=UI.noteQ.trim().toLowerCase(),all=Store.list("notes");
   const notes=all.filter(n=>!q||((n.title||"")+" "+(n.body||"")).toLowerCase().includes(q)).sort((a,b)=>(b.pinned?1:0)-(a.pinned?1:0)||b.updated-a.updated);
@@ -809,20 +814,22 @@ function txnSheet(x,presetJd){
   });
 }
 
-function noteSheet(n){
-  const isNew=!n;const note=n||{id:uid(),title:"",body:"",pinned:false,color:"",updated:Date.now()};let pinned=!!note.pinned,color=note.color||"",deleted=false;
+function noteSheet(n,presetDate){
+  const isNew=!n;const note=n||{id:uid(),title:"",body:"",pinned:false,color:"",date:presetDate||"",updated:Date.now()};let pinned=!!note.pinned,color=note.color||"",deleted=false;
   openSheet(`<div class="sec"><h3>${isNew?"Ghi chú mới":"Ghi chú"}</h3><button class="chip" id="ntPin" aria-pressed="${pinned}">${pinned?"Đã ghim":"Ghim lên đầu"}</button></div>
     <input class="in" id="ntTitle" placeholder="Tiêu đề" value="${esc(note.title)}" style="font:700 18px var(--f-display)" aria-label="Tiêu đề">
     <textarea class="in" id="ntBody" placeholder="Nội dung ghi chú…" aria-label="Nội dung">${esc(note.body)}</textarea>
+    <div class="field"><label for="ntDate">Gắn với ngày (tùy chọn)</label><input class="in" type="date" id="ntDate" value="${note.date||""}"><span class="hint" id="ntDateL"></span></div>
     <div class="field"><span class="lab">Màu giấy</span><div class="swatches" id="ntColor">${["","y","r","g","b","v"].map(c=>`<button type="button" class="sw ${c?"c-"+c:""}" data-c="${c}" aria-pressed="${c===color}" aria-label="Màu ${c||"trắng"}"></button>`).join("")}</div></div>
     <div class="actions"><button class="btn red" id="ntDone">Xong</button>${isNew?"":`<button class="btn danger" id="ntDel">Xóa</button>`}</div>`,root=>{
     root.querySelector("#ntPin").addEventListener("click",e=>{pinned=!pinned;e.target.setAttribute("aria-pressed",pinned);e.target.textContent=pinned?"Đã ghim":"Ghim lên đầu"});
     root.querySelector("#ntColor").addEventListener("click",e=>{const b=e.target.closest("[data-c]");if(!b)return;color=b.dataset.c;root.querySelectorAll("#ntColor .sw").forEach(x=>x.setAttribute("aria-pressed",x===b))});
     root.querySelector("#ntDone").addEventListener("click",closeSheet);
     const del=root.querySelector("#ntDel");if(del)confirmBtn(del,()=>{deleted=true;Store.del("notes",note.id);closeSheet();toast("Đã xóa ghi chú")});
-    root._onClose=()=>{if(deleted)return;const title=root.querySelector("#ntTitle").value.trim(),body=root.querySelector("#ntBody").value;
+    const dIn=root.querySelector("#ntDate"),dL=()=>{root.querySelector("#ntDateL").textContent=dIn.value?WD[weekday(keyJd(dIn.value))]+" · "+fmtLunar(keyJd(dIn.value)):"Ghi chú gắn ngày sẽ hiện trên lịch và tiện ích lịch tháng"};dIn.addEventListener("input",dL);dL();
+    root._onClose=()=>{if(deleted)return;const title=root.querySelector("#ntTitle").value.trim(),body=root.querySelector("#ntBody").value,date=dIn.value||"";
       if(!title&&!body.trim()){if(!isNew)Store.del("notes",note.id);return}
-      if(isNew||title!==note.title||body!==note.body||pinned!==!!note.pinned||color!==(note.color||""))Store.put("notes",{id:note.id,title,body,pinned,color,updated:Date.now()})};
+      if(isNew||title!==note.title||body!==note.body||pinned!==!!note.pinned||color!==(note.color||"")||date!==(note.date||""))Store.put("notes",{id:note.id,title,body,pinned,color,date,updated:Date.now()})};
     if(isNew)setTimeout(()=>root.querySelector("#ntBody").focus(),60);
   });
 }
@@ -922,7 +929,7 @@ document.addEventListener("click",e=>{
   const a=e.target.closest("[data-act]");
   if(a){const act=a.dataset.act,jd=a.dataset.jd?+a.dataset.jd:null;
     if(["addEvent","addTxn","addNote","addGift"].includes(act)&&!$("#scrim").hidden)closeSheet();
-    if(act==="addEvent")eventSheet(null,jd,a.dataset.type);else if(act==="addTxn")txnSheet(null,jd);else if(act==="addNote")noteSheet(null);
+    if(act==="addEvent")eventSheet(null,jd,a.dataset.type);else if(act==="addTxn")txnSheet(null,jd);else if(act==="addNote")noteSheet(null,jd?jdKey(jd):"");
     else if(act==="addGift")giftSheet(null);
     else if(act==="budget")budgetSheet();else if(act==="ics")exportICS();return}
   const g=e.target.closest("[data-go]");if(g){goTab(g.dataset.go);return}
@@ -1073,9 +1080,33 @@ function widgetData(){const t=todayJd(),occ=occurrences(t,t+460,{noMonthly:1}),u
     const u=user[ui],h=hol[hi],nx=u&&u.jd-jd<=60?u:(h&&(!u||h.jd<=u.jd)?h:u);const n=nx?nx.jd-jd:0;
     days[jdKey(jd)]={l:l.d+" tháng "+LMONTH[l.m]+(l.leap?" nhuận":""),y:canChiYear(l.y),n:nx?(n===0?"Hôm nay: ":n===1?"Ngày mai: ":"Còn "+n+" ngày: ")+nx.title:""}}
   return JSON.stringify(days)}
+/* Bảng xem nhanh một ngày (mở khi bấm vào ngày trên tiện ích lịch tháng) */
+function daySheet(jd,focus){const key=jdKey(jd),l=lunarOfJd(jd),os=occurrences(jd,jd),ns=notesOn(key),[d]=jdToDate(jd);
+  openSheet(`<div class="dayhead"><div class="bn">${d}</div><div class="tt"><b>${WD[weekday(jd)]}, ${fmtDate(jd)}</b><span>Ngày ${l.d} tháng ${LMONTH[l.m]}${l.leap?" nhuận":""} năm ${canChiYear(l.y)}<br>Ngày ${canChiDay(jd)} · tháng ${canChiMonth(l.m,l.y)}</span></div></div>
+    ${os.length?`<div class="card"><div class="list">${os.map(o=>occRow(o,jd,false)).join("")}</div></div>`:""}
+    <div class="field"><label for="dsQuick">Ghi nhanh cho ngày này</label><textarea class="in" id="dsQuick" style="min-height:96px" placeholder="Ví dụ: 9h đi khám răng, mua quà cho mẹ…"></textarea></div>
+    <button class="btn red" id="dsSave" type="button">Lưu ghi chú</button>
+    ${ns.length?`<div class="sec"><h2>Ghi chú ngày này</h2><span class="muted small">${ns.length}</span></div><div class="card"><div class="list">${ns.map(noteRow).join("")}</div></div>`:""}
+    <div class="actions"><button class="btn ghost" data-act="addEvent" data-jd="${jd}">+ Ngày nhớ</button><button class="btn ghost" data-act="addTxn" data-jd="${jd}">+ Chi tiêu</button></div>`,root=>{
+    const q=root.querySelector("#dsQuick");
+    root.querySelector("#dsSave").onclick=()=>{const t=q.value.trim();if(!t){toast("Gõ nội dung ghi chú trước");q.focus();return}
+      Store.put("notes",{id:uid(),title:"",body:t,pinned:false,color:"y",date:key,updated:Date.now()});toast("Đã lưu ghi chú ngày "+fmtShort(jd));daySheet(jd)};
+    if(focus)setTimeout(()=>q.focus(),120)})}
+window.sotayOpenDay=function(key){if(!/^\d{4}-\d{2}-\d{2}$/.test(key))return;const jd=keyJd(key),[,m,y]=jdToDate(jd);
+  if(!$("#scrim").hidden)closeSheet();UI.selJd=jd;UI.calM=m;UI.calY=y;goTab("cal");daySheet(jd,true)};
+/* Dữ liệu cho tiện ích lịch tháng: 12 tháng trước đến 12 tháng sau.
+   Mỗi ngày: "ngày âm|cờ" — H ngày nghỉ lễ, h ngày lễ khác, e ngày nhớ, n có ghi chú, m mùng 1/rằm. */
+function calData(){const t=todayJd(),[,tm,ty]=jdToDate(t),start=jdFromDate(1,tm,ty-1),end=jdFromDate(1,tm===12?1:tm+1,tm===12?ty+2:ty+1)-1;
+  const fl={};for(const o of occurrences(start,end,{noMonthly:1}))fl[o.jd]=(fl[o.jd]||"")+(o.kind==="hol"?(o.off?"H":"h"):"e");
+  const nds=noteDateSet(),days={},months={};
+  for(let jd=start;jd<=end;jd++){const l=lunarOfJd(jd),k=jdKey(jd);let f=fl[jd]||"";if(nds.has(k))f+="n";if(l.d===1||l.d===15)f+="m";
+    days[k]=(l.d===1?l.d+"/"+l.m:String(l.d))+"|"+[...new Set(f)].join("");
+    const[d,m,y]=jdToDate(jd);if(d===1){const last=jdFromDate(1,m===12?1:m+1,m===12?y+1:y)-1,a=lunarOfJd(jd),b=lunarOfJd(last);
+      months[y+"-"+pad(m)]=canChiYear(lunarOfJd(jd+14).y)+" · "+a.d+"/"+a.m+" – "+b.d+"/"+b.m+" âm"}}
+  return JSON.stringify({days,months})}
 let lastWidgetKey="";
-function syncWidget(){if(!NATIVE||!NATIVE.setWidgetData)return;const k=todayJd()+"|"+JSON.stringify(Store.data.events)+"|"+Store.settings.showHolidays;
-  if(k===lastWidgetKey)return;lastWidgetKey=k;try{NATIVE.setWidgetData(widgetData())}catch(e){}}
+function syncWidget(){if(!NATIVE||!NATIVE.setWidgetData)return;const k=todayJd()+"|"+JSON.stringify(Store.data.events)+"|"+Store.settings.showHolidays+"|"+[...noteDateSet()].sort().join(",");
+  if(k===lastWidgetKey)return;lastWidgetKey=k;try{NATIVE.setWidgetData(widgetData());if(NATIVE.setCalendarData)NATIVE.setCalendarData(calData())}catch(e){}}
 
 /* ================= KHỞI ĐỘNG ================= */
 {const th=lsGet("sotay.theme");if(th==="light"||th==="dark")document.documentElement.dataset.theme=th}

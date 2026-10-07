@@ -2,4 +2,5 @@
 <resources>
     <string name="app_name">Sổ Tay Lịch</string>
     <string name="widget_desc">Tờ lịch hôm nay: ngày âm và ngày nhớ sắp tới</string>
+    <string name="widget_thang_desc">Lịch cả tháng: ngày dương, ngày âm, ngày lễ, ngày nhớ và ghi chú. Chạm vào ngày để ghi chú nhanh.</string>
 </resources>
