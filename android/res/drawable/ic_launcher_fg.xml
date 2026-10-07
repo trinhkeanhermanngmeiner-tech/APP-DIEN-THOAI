@@ -1,0 +1,11 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
+    <!-- tờ lịch -->
+    <path android:fillColor="#FFF7EE" android:pathData="M36,34h36a6,6 0 0 1 6,6v32a6,6 0 0 1 -6,6h-36a6,6 0 0 1 -6,-6v-32a6,6 0 0 1 6,-6z" />
+    <!-- dải vàng đầu tờ lịch -->
+    <path android:fillColor="#E3AE3F" android:pathData="M30,40a6,6 0 0 1 6,-6h36a6,6 0 0 1 6,6v6h-48z" />
+    <!-- lỗ ghim -->
+    <path android:fillColor="#7E120E" android:pathData="M41.5,34a2.5,2.5 0 1,0 5,0a2.5,2.5 0 1,0 -5,0z M61.5,34a2.5,2.5 0 1,0 5,0a2.5,2.5 0 1,0 -5,0z" />
+    <!-- trăng khuyết -->
+    <path android:fillColor="#B3201B" android:pathData="M56,51A11.5,11.5 0 1,0 56,74A9,11.5 0 1,1 56,51z" />
+</vector>
