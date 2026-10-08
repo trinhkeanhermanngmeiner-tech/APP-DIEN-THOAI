@@ -29,7 +29,8 @@ Mỗi lần đẩy code lên, GitHub tự build. Vào tab **Actions** của repo
 3. Bấm Run. Để đánh giá độ mượt, chọn biến thể build `release`.
 
 ## Đặt làm launcher mặc định
-Bấm nút Home sau khi cài, chọn **Aurora Launcher** → **Luôn luôn**. Hoặc vào **Cài đặt → Ứng dụng → Ứng dụng mặc định → Màn hình chính**.
+- Mở Aurora. Khi chưa là mặc định, phía trên màn hình có thanh **"Đặt mặc định"**. Bấm vào để hiện hộp chọn launcher của hệ thống, hoặc mở trang cài đặt nếu HyperOS không hiện hộp đó.
+- Cách thủ công trên HyperOS: **Cài đặt → Ứng dụng → Ứng dụng mặc định → Màn hình chính**, chọn Aurora Launcher. Nếu không tìm thấy, gõ "mặc định" hoặc "màn hình chính" vào ô tìm kiếm của Cài đặt.
 
 ## Lưu ý với HyperOS (Xiaomi / POCO)
 - Một số bản HyperOS/MIUI **chặn cử chỉ toàn màn hình khi dùng launcher bên thứ ba** (tự chuyển về 3 nút điều hướng). Đây là giới hạn của hệ thống, app không vượt qua được.

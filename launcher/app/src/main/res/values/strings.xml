@@ -5,4 +5,6 @@
     <string name="app_info">Thông tin ứng dụng</string>
     <string name="uninstall">Gỡ cài đặt</string>
     <string name="launch_failed">Không mở được ứng dụng</string>
+    <string name="default_home_message">Aurora chưa phải màn hình chính mặc định</string>
+    <string name="set_default">Đặt mặc định</string>
 </resources>

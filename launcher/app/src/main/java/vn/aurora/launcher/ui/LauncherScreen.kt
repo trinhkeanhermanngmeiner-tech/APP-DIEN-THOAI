@@ -140,6 +140,7 @@ fun LauncherScreen(viewModel: LauncherViewModel) {
                 )
                 .systemBarsPadding(),
         ) {
+            DefaultHomeBanner(renderer)
             HorizontalPager(
                 state = pagerState,
                 beyondViewportPageCount = 1,
