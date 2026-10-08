@@ -16,12 +16,17 @@ import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 import vn.aurora.launcher.data.AppInfo
 import vn.aurora.launcher.data.AppRepository
+import vn.aurora.launcher.data.LauncherSettings
+import vn.aurora.launcher.data.SettingsRepository
 
 const val DOCK_SIZE = 4
 
 class LauncherViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repository = AppRepository(application)
+    private val settingsRepository = SettingsRepository(application)
+
+    val settings: StateFlow<LauncherSettings> = settingsRepository.settings
 
     private val _apps = MutableStateFlow<List<AppInfo>>(emptyList())
     val apps: StateFlow<List<AppInfo>> = _apps.asStateFlow()
@@ -48,6 +53,10 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
             .distinctBy { it.packageName }
         _apps.value = apps
         _dock.value = (preferred + apps.filterNot { it in preferred }).take(DOCK_SIZE)
+    }
+
+    fun updateSettings(transform: (LauncherSettings) -> LauncherSettings) {
+        settingsRepository.update(transform)
     }
 
     fun onHomePressed() {

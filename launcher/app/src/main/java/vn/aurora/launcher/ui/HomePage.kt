@@ -12,30 +12,37 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import vn.aurora.launcher.data.AppInfo
 import kotlin.math.abs
 
-const val GRID_COLUMNS = 4
 const val PAGE_ROWS = 5
 
 /** The first page gives one row to the clock. */
 const val FIRST_PAGE_ROWS = 4
 
-fun paginate(apps: List<AppInfo>): List<List<AppInfo>> {
-    val firstPageSlots = FIRST_PAGE_ROWS * GRID_COLUMNS
+/** How icons look; shared by the home pages, the dock and the drawer. */
+@Immutable
+data class IconStyle(val size: Dp, val showLabel: Boolean)
+
+fun paginate(apps: List<AppInfo>, columns: Int): List<List<AppInfo>> {
+    val firstPageSlots = FIRST_PAGE_ROWS * columns
     val first = apps.take(firstPageSlots)
-    return listOf(first) + apps.drop(firstPageSlots).chunked(PAGE_ROWS * GRID_COLUMNS)
+    return listOf(first) + apps.drop(firstPageSlots).chunked(PAGE_ROWS * columns)
 }
 
 @Composable
 fun HomePage(
     apps: List<AppInfo>,
     showClock: Boolean,
+    columns: Int,
+    iconStyle: IconStyle,
     actions: AppActions,
     tilt: () -> Offset,
     modifier: Modifier = Modifier,
@@ -51,12 +58,19 @@ fun HomePage(
         ) {
             for (row in 0 until rows) {
                 Row(Modifier.fillMaxWidth()) {
-                    for (column in 0 until GRID_COLUMNS) {
+                    for (column in 0 until columns) {
                         Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
-                            val app = apps.getOrNull(row * GRID_COLUMNS + column)
+                            val app = apps.getOrNull(row * columns + column)
                             if (app != null) {
                                 // Lower rows sit "closer" and move more with tilt.
-                                AppIcon(app, actions, tilt, depth = 0.6f + 0.15f * row)
+                                AppIcon(
+                                    app = app,
+                                    actions = actions,
+                                    tilt = tilt,
+                                    depth = 0.6f + 0.15f * row,
+                                    iconSize = iconStyle.size,
+                                    showLabel = iconStyle.showLabel,
+                                )
                             }
                         }
                     }

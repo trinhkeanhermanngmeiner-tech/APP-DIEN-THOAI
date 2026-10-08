@@ -24,6 +24,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
@@ -68,6 +69,9 @@ fun AppDrawer(
     onDrag: (Float) -> Unit,
     onSettle: suspend (Float) -> Unit,
     actions: AppActions,
+    columns: Int,
+    iconStyle: IconStyle,
+    onOpenSettings: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var query by remember { mutableStateOf("") }
@@ -147,7 +151,7 @@ fun AppDrawer(
             Box(
                 Modifier
                     .fillMaxWidth()
-                    .height(28.dp)
+                    .height(44.dp)
                     .draggable(
                         orientation = Orientation.Vertical,
                         state = rememberDraggableState { delta -> currentOnDrag(delta) },
@@ -160,6 +164,12 @@ fun AppDrawer(
                         .size(width = 40.dp, height = 5.dp)
                         .background(Color.White.copy(alpha = 0.5f), CircleShape),
                 )
+                TextButton(
+                    onClick = onOpenSettings,
+                    modifier = Modifier.align(Alignment.CenterEnd),
+                ) {
+                    Text(stringResource(R.string.settings), color = Color.White)
+                }
             }
             TextField(
                 value = query,
@@ -187,7 +197,7 @@ fun AppDrawer(
                     .padding(horizontal = 20.dp, vertical = 8.dp),
             )
             LazyVerticalGrid(
-                columns = GridCells.Fixed(GRID_COLUMNS),
+                columns = GridCells.Fixed(columns),
                 state = gridState,
                 contentPadding = PaddingValues(horizontal = 8.dp, vertical = 12.dp),
                 modifier = Modifier
@@ -199,11 +209,13 @@ fun AppDrawer(
                         app = app,
                         actions = actions,
                         tilt = { Offset.Zero },
+                        iconSize = iconStyle.size,
+                        showLabel = iconStyle.showLabel,
                         modifier = Modifier
                             .animateItem()
                             .graphicsLayer {
                                 // Rows cascade in one after another as the drawer opens.
-                                val delay = (0.2f + (index / GRID_COLUMNS) * 0.05f).coerceAtMost(0.55f)
+                                val delay = (0.2f + (index / columns) * 0.05f).coerceAtMost(0.55f)
                                 val local = ((progress() - delay) / (1f - delay)).coerceIn(0f, 1f)
                                 alpha = local
                                 translationY = (1f - local) * 40.dp.toPx()

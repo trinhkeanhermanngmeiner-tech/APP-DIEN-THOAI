@@ -21,14 +21,19 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
  * The neutral pose slowly follows the current pose, so the parallax always recentres
  * whether the phone is held upright or lying on a table. Only listens while resumed.
  * Read it inside draw / graphicsLayer lambdas so sensor updates don't recompose.
+ * When [enabled] is false the sensor is not used and the tilt stays at zero.
  */
 @Composable
-fun rememberTilt(): State<Offset> {
+fun rememberTilt(enabled: Boolean = true): State<Offset> {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val tilt = remember { mutableStateOf(Offset.Zero) }
 
-    DisposableEffect(context, lifecycleOwner) {
+    DisposableEffect(context, lifecycleOwner, enabled) {
+        if (!enabled) {
+            tilt.value = Offset.Zero
+            return@DisposableEffect onDispose { }
+        }
         val sensorManager = context.getSystemService(SensorManager::class.java)
         val sensor = sensorManager?.getDefaultSensor(Sensor.TYPE_GRAVITY)
             ?: sensorManager?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)

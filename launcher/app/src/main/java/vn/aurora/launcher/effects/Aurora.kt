@@ -87,6 +87,9 @@ class AuroraRenderer(val tilt: () -> Offset) {
     /** Seconds of animation; only advances while the launcher is resumed. */
     val time = mutableFloatStateOf(0f)
 
+    /** When false a still gradient is drawn instead of the animated aurora. */
+    var animated by mutableStateOf(true)
+
     /** Full-screen size; panels use it so their slice lines up with the background. */
     var rootSize by mutableStateOf(Size.Zero)
 
@@ -100,7 +103,9 @@ class AuroraRenderer(val tilt: () -> Offset) {
         val seconds = time.floatValue
         val currentTilt = tilt()
         scope.translate(-origin.x, -origin.y) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && shader != null && shaderBrush != null) {
+            if (!animated) {
+                drawFallback(resolution, seconds = 0f)
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && shader != null && shaderBrush != null) {
                 updateUniforms(shader, resolution, seconds, currentTilt)
                 drawRect(shaderBrush, size = resolution)
             } else {

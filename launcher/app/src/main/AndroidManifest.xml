@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.REQUEST_DELETE_PACKAGES" />
+    <!-- Swipe down on the home screen to open notifications. -->
+    <uses-permission android:name="android.permission.EXPAND_STATUS_BAR" />
 
     <!-- Package visibility (Android 11+): which apps the launcher may list and resolve. -->
     <queries>
@@ -50,5 +52,19 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Optional: lets double-tap lock the screen. Enabled by the user in Accessibility settings. -->
+        <service
+            android:name=".system.AuroraAccessibilityService"
+            android:exported="false"
+            android:label="@string/accessibility_label"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/accessibility_service" />
+        </service>
     </application>
 </manifest>

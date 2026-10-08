@@ -18,6 +18,15 @@ Launcher Android nhiều hiệu ứng, viết bằng Kotlin + Jetpack Compose. C
 
 Chức năng: liệt kê mọi ứng dụng (kể cả hồ sơ công việc), tự cập nhật khi cài hoặc gỡ app, tìm kiếm không dấu ("tin nhan" ra "Tin nhắn"), dock tự chọn app Điện thoại, Tin nhắn, Trình duyệt, Camera, nhấn giữ icon để xem thông tin hoặc gỡ cài đặt.
 
+## Cài đặt trong app
+Nhấn giữ vào chỗ trống trên màn hình chính (hoặc bấm **Cài đặt** trong ngăn kéo ứng dụng) để:
+- **Ẩn thanh điều hướng** 3 nút ở màn hình chính (vuốt từ cạnh dưới lên để hiện tạm).
+- **Vuốt xuống** mở thanh thông báo, **chạm 2 lần** khóa màn hình (cần bật "Aurora Launcher – cử chỉ" trong Trợ năng).
+- Bật/tắt từng hiệu ứng: nền cực quang, đom đóm, chuyển động theo độ nghiêng, lật trang 3D, dock kính mờ.
+- Bố cục: hiện/ẩn tên app, 4 hoặc 5 cột, kích thước icon.
+
+**Giới hạn:** app thường không đổi được chế độ điều hướng của hệ thống. Muốn bỏ 3 nút trong *mọi* ứng dụng, chuyển HyperOS sang cử chỉ toàn màn hình: **Cài đặt → Màn hình chính → Điều hướng hệ thống → Cử chỉ**. Một số bản HyperOS khóa mục này khi dùng launcher bên thứ ba.
+
 ## Cách lấy file APK
 
 ### Cách 1: tải từ GitHub Actions (không cần máy tính)

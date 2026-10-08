@@ -7,4 +7,40 @@
     <string name="launch_failed">Không mở được ứng dụng</string>
     <string name="default_home_message">Aurora chưa phải màn hình chính mặc định</string>
     <string name="set_default">Đặt mặc định</string>
+
+    <string name="accessibility_label">Aurora Launcher – cử chỉ</string>
+    <string name="accessibility_description">Cho phép Aurora khóa màn hình khi chạm 2 lần và mở thanh thông báo. Không đọc nội dung màn hình.</string>
+    <string name="enable_accessibility_toast">Bật \"Aurora Launcher – cử chỉ\" trong Trợ năng để dùng chạm 2 lần khóa màn hình</string>
+
+    <string name="settings">Cài đặt</string>
+    <string name="settings_title">Cài đặt Aurora</string>
+    <string name="done">Xong</string>
+    <string name="settings_hint">Nhấn giữ vào chỗ trống trên màn hình chính để mở lại cài đặt</string>
+
+    <string name="section_navigation">Điều hướng và cử chỉ</string>
+    <string name="hide_nav_bar">Ẩn thanh điều hướng</string>
+    <string name="hide_nav_bar_desc">Ẩn 3 nút ở màn hình chính. Vuốt từ cạnh dưới lên để hiện tạm.</string>
+    <string name="swipe_down_notifications">Vuốt xuống mở thông báo</string>
+    <string name="swipe_down_notifications_desc">Vuốt xuống ở bất kỳ đâu trên màn hình chính</string>
+    <string name="double_tap_lock">Chạm 2 lần để khóa màn hình</string>
+    <string name="double_tap_lock_desc">Cần bật Aurora trong Trợ năng</string>
+    <string name="double_tap_lock_ready">Đã bật Trợ năng</string>
+    <string name="system_navigation_tip">Muốn bỏ hẳn 3 nút trong mọi ứng dụng: chuyển hệ thống sang cử chỉ toàn màn hình trong Cài đặt → Màn hình chính → Điều hướng hệ thống.</string>
+
+    <string name="section_effects">Hiệu ứng</string>
+    <string name="aurora_background">Nền cực quang động</string>
+    <string name="fireflies">Đom đóm phát sáng</string>
+    <string name="tilt_parallax">Chuyển động theo độ nghiêng</string>
+    <string name="cube_pages">Lật trang 3D</string>
+    <string name="glass_dock">Dock kính mờ</string>
+
+    <string name="section_layout">Bố cục</string>
+    <string name="show_labels">Hiện tên ứng dụng</string>
+    <string name="grid_columns">Số cột</string>
+    <string name="icon_size">Kích thước icon</string>
+
+    <string name="section_system">Hệ thống</string>
+    <string name="default_home_settings">Chọn launcher mặc định</string>
+    <string name="accessibility_settings">Mở cài đặt Trợ năng</string>
+    <string name="aurora_app_info">Thông tin ứng dụng Aurora</string>
 </resources>

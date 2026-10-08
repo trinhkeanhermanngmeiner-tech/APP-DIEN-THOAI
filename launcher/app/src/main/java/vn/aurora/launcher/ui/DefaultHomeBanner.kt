@@ -1,10 +1,7 @@
 package vn.aurora.launcher.ui
 
 import android.app.role.RoleManager
-import android.content.ActivityNotFoundException
 import android.content.Context
-import android.content.Intent
-import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
@@ -36,26 +33,10 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import vn.aurora.launcher.R
 import vn.aurora.launcher.effects.AuroraRenderer
 import vn.aurora.launcher.effects.GlassPanel
+import vn.aurora.launcher.system.SystemActions
 
 private fun Context.isDefaultHome(): Boolean =
     getSystemService(RoleManager::class.java)?.isRoleHeld(RoleManager.ROLE_HOME) == true
-
-/** Opens the system's "default home app" screen, falling back to more general settings pages. */
-private fun Context.openHomeSettings() {
-    val candidates = listOf(
-        Intent(Settings.ACTION_HOME_SETTINGS),
-        Intent(Settings.ACTION_MANAGE_DEFAULT_APPS_SETTINGS),
-        Intent(Settings.ACTION_SETTINGS),
-    )
-    for (intent in candidates) {
-        try {
-            startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
-            return
-        } catch (_: ActivityNotFoundException) {
-            // Try the next, more general page.
-        }
-    }
-}
 
 /**
  * Shown while Aurora is not the default home app. Asks for the HOME role through the
@@ -78,7 +59,7 @@ fun DefaultHomeBanner(renderer: AuroraRenderer, modifier: Modifier = Modifier) {
 
     val roleRequest = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         isDefault = context.isDefaultHome()
-        if (!isDefault) context.openHomeSettings()
+        if (!isDefault) SystemActions.openHomeSettings(context)
     }
 
     AnimatedVisibility(visible = !isDefault, modifier = modifier) {
@@ -108,10 +89,10 @@ fun DefaultHomeBanner(renderer: AuroraRenderer, modifier: Modifier = Modifier) {
                             ?.takeIf { it.isRoleAvailable(RoleManager.ROLE_HOME) }
                             ?.createRequestRoleIntent(RoleManager.ROLE_HOME)
                         if (intent == null) {
-                            context.openHomeSettings()
+                            SystemActions.openHomeSettings(context)
                         } else {
                             runCatching { roleRequest.launch(intent) }
-                                .onFailure { context.openHomeSettings() }
+                                .onFailure { SystemActions.openHomeSettings(context) }
                         }
                     },
                 ) {
