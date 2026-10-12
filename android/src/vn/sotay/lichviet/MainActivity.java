@@ -491,13 +491,21 @@ public class MainActivity extends Activity {
         @JavascriptInterface
         public void setWidgetData(String json) {
             Reminders.prefs(MainActivity.this).edit().putString("widget", json).apply();
-            LichWidget.refreshAll(MainActivity.this);
+            Widgets.refreshAll(MainActivity.this);
         }
 
         @JavascriptInterface
         public void setCalendarData(String json) {
             Reminders.prefs(MainActivity.this).edit().putString("cal", json).apply();
             LichMonthWidget.refreshAll(MainActivity.this);
+        }
+
+        /** Theme màu của app / tiện ích và chế độ xem phần cuối ghi chú; làm mới các tiện ích. */
+        @JavascriptInterface
+        public void setAppearance(String skin, String widgetSkin, boolean tailFirst) {
+            Reminders.prefs(MainActivity.this).edit().putString("skin", skin).putString("wskin", widgetSkin)
+                    .putBoolean("tailFirst", tailFirst).apply();
+            Widgets.refreshAll(MainActivity.this);
         }
 
         @JavascriptInterface

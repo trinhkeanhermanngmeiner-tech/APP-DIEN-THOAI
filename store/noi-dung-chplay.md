@@ -26,6 +26,7 @@ LỊCH ÂM DƯƠNG
 • Đổi ngày âm sang dương và ngược lại
 • Đầy đủ ngày lễ, Tết Việt Nam theo dương lịch và âm lịch
 • Nhắc mùng 1 và ngày rằm hằng tháng
+• Xem cả năm trên một màn hình, chuyển giữa ngày dương và ngày âm
 
 NHẮC NGÀY GIỖ, SINH NHẬT, KỶ NIỆM
 • Nhập ngày giỗ theo âm lịch, app tự đổi sang dương lịch mỗi năm
@@ -44,11 +45,13 @@ CHI TIÊU
 GHI CHÚ
 • Ghi chú nhiều màu giấy, ghim lên đầu, tìm kiếm
 • Gắn ghi chú với một ngày, hiện ngay trên lịch
+• Ghi chú dài: ưu tiên hiện phần viết sau cùng
 
 TIỆN ÍCH MÀN HÌNH CHÍNH
 • Tờ lịch (gọn): ngày dương, ngày âm, ngày nhớ sắp tới
 • Lịch tháng: xem cả tháng âm dương, ngày lễ, ghi chú; chạm vào ngày để ghi chú nhanh
-• Ghi chú: xem và sửa ghi chú ngay trên màn hình chính
+• Ghi chú: ghim, mở rộng đọc đủ nội dung và sửa ghi chú ngay trên màn hình chính
+• 7 theme màu cho cả app lẫn tiện ích
 
 AN TOÀN VÀ RIÊNG TƯ
 • Không quảng cáo, không thu thập dữ liệu, không cần tài khoản
@@ -101,7 +104,7 @@ Nên chụp thêm 1–2 ảnh màn hình chính có tiện ích Lịch tháng t�
 | Mục | Giá trị |
 |---|---|
 | Tệp tải lên | `dist/SoTayLichViet.aab` |
-| Tên bản phát hành | `1.0 (7)` (số trong ngoặc = mã phiên bản hiện tại) |
+| Tên bản phát hành | `1.0 (8)` (số trong ngoặc = mã phiên bản hiện tại) |
 | Ghi chú phát hành (vi-VN) | xem bên dưới |
 
 ```

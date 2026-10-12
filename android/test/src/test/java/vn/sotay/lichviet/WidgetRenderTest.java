@@ -51,7 +51,42 @@ public class WidgetRenderTest {
                 .putString("cal", "{\"days\":{" + days + "},\"months\":{\"" + ym + "\":\"Bính Ngọ · 21/8 – 22/9 âm\"}}")
                 .putString("widget", "{\"" + today + "\":{\"l\":\"27 tháng Tám\",\"y\":\"Bính Ngọ\",\"n\":\"Còn 5 ngày: Giỗ ông nội · giỗ lần thứ 11\"}}")
                 .apply();
-        render(LichMonthWidget.build(c).apply(c, new FrameLayout(c)), 320, 330, "target/widget-thang.png");
-        render(LichWidget.build(c).apply(c, new FrameLayout(c)), 150, 160, "target/widget-gon.png");
+        Reminders.prefs(c).edit().putString("widget", "{\"" + today + "\":{\"l\":\"27 tháng Tám\",\"y\":\"Bính Ngọ\",\"n\":\"Còn 5 ngày: Giỗ ông nội · giỗ lần thứ 11\"}}").apply();
+        StringBuilder long1 = new StringBuilder();
+        for (int i = 1; i <= 14; i++) long1.append(i > 1 ? "\n" : "").append("Ngày ").append(i).append(": bệnh nhân ổn định, theo dõi thêm");
+        NoteStore.write(c, "{\"data\":{\"notes\":{"
+                + "\"p\":{\"id\":\"p\",\"title\":\"Đi chợ Tết\",\"body\":\"- Lá dong\\n- Gạo nếp\\n- Đỗ xanh\",\"pinned\":true,\"color\":\"y\",\"updated\":500,\"date\":\"" + today + "\"},"
+                + "\"a\":{\"id\":\"a\",\"title\":\"Nhật ký bệnh nhân\",\"body\":" + org.json.JSONObject.quote(long1.toString()) + ",\"pinned\":false,\"color\":\"b\",\"updated\":400},"
+                + "\"b\":{\"id\":\"b\",\"title\":\"\",\"body\":\"Gọi bác Hùng\\nMua quà cho mẹ\",\"pinned\":false,\"color\":\"g\",\"updated\":300}}}}");
+        java.util.Set<String> open = new java.util.HashSet<String>();
+        open.add("p");
+        Reminders.prefs(c).edit().putStringSet("wexp", open).apply();
+        String[] ids = Skins.IDS;
+        for (int i = 0; i < ids.length; i++) {
+            Reminders.prefs(c).edit().putString("wskin", ids[i]).apply();
+            render(LichMonthWidget.build(c).apply(c, new FrameLayout(c)), 320, 330, "target/widget-thang-" + ids[i] + ".png");
+            render(LichWidget.build(c).apply(c, new FrameLayout(c)), 150, 160, "target/widget-gon-" + ids[i] + ".png");
+            // Tiện ích Ghi chú: phần đầu + các dòng ghi chú (danh sách thật chỉ dựng được trên máy, nên ghép tay)
+            FrameLayout shell = new FrameLayout(c);
+            android.widget.LinearLayout col = new android.widget.LinearLayout(c);
+            col.setOrientation(android.widget.LinearLayout.VERTICAL);
+            View head = NotesWidget.build(c, 1).apply(c, new FrameLayout(c));
+            android.view.ViewGroup hv = (android.view.ViewGroup) head;
+            View list = hv.findViewById(R.id.gc_list);
+            ((android.view.ViewGroup) list.getParent()).removeView(list);
+            View empty = hv.findViewById(R.id.gc_empty);
+            ((android.view.ViewGroup) empty.getParent()).removeView(empty);
+            hv.setBackgroundResource(Skins.background(c));
+            NotesWidgetService.Factory f = new NotesWidgetService.Factory(c);
+            f.onDataSetChanged();
+            android.widget.LinearLayout rows = new android.widget.LinearLayout(c);
+            rows.setOrientation(android.widget.LinearLayout.VERTICAL);
+            for (int n = 0; n < f.getCount(); n++) rows.addView(f.getViewAt(n).apply(c, rows));
+            col.addView(head, new android.widget.LinearLayout.LayoutParams(-1, -2));
+            col.addView(rows, new android.widget.LinearLayout.LayoutParams(-1, -2));
+            col.setBackgroundResource(Skins.background(c));
+            shell.addView(col);
+            render(shell, 300, 400, "target/widget-ghichu-" + ids[i] + ".png");
+        }
     }
 }

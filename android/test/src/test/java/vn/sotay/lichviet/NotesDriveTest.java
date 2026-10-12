@@ -70,7 +70,7 @@ public class NotesDriveTest {
         q = Robolectric.buildActivity(QuickNoteActivity.class, new Intent().putExtra(QuickNoteActivity.EXTRA_ID, newId)).setup();
         ViewGroup root = (ViewGroup) ((ViewGroup) q.get().findViewById(android.R.id.content)).getChildAt(0);
         ViewGroup btnRow = (ViewGroup) root.getChildAt(root.getChildCount() - 1);
-        btnRow.getChildAt(0).performClick(); btnRow.getChildAt(0).performClick();
+        btnRow.getChildAt(1).performClick(); btnRow.getChildAt(1).performClick(); // nút thứ 2 = Xóa (nút đầu là Ghim)
         q.pause().stop().destroy();
         if (NoteStore.readRoot(c).getJSONObject("data").getJSONObject("notes").has(newId)) throw new AssertionError("xóa ghi chú nhanh sai");
 

@@ -33,6 +33,13 @@
             </intent-filter>
         </receiver>
         <activity
+            android:name=".WidgetActionActivity"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:noHistory="true"
+            android:taskAffinity=""
+            android:theme="@android:style/Theme.NoDisplay" />
+        <activity
             android:name=".QuickNoteActivity"
             android:exported="false"
             android:excludeFromRecents="true"

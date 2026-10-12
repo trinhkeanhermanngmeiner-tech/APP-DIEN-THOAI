@@ -27,7 +27,7 @@ public class QuickNoteActivity extends Activity {
     private String noteId;
     private JSONObject original;
     private EditText title, body;
-    private boolean deleteArmed, deleted;
+    private boolean deleteArmed, deleted, pinned;
 
     private int dp(int v) {
         return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, v, getResources().getDisplayMetrics());
@@ -42,6 +42,8 @@ public class QuickNoteActivity extends Activity {
             original = notes == null ? null : notes.optJSONObject(noteId);
             if (original == null) noteId = null;
         }
+        pinned = original != null && original.optBoolean("pinned");
+        final int accent = Skins.accent(this);
 
         LinearLayout root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
@@ -85,6 +87,16 @@ public class QuickNoteActivity extends Activity {
         row.setOrientation(LinearLayout.HORIZONTAL);
         row.setGravity(Gravity.END | Gravity.CENTER_VERTICAL);
         row.setPadding(0, dp(8), 0, 0);
+        final Button pin = flatButton(pinned ? "Bỏ ghim" : "Ghim");
+        pin.setTextColor(accent);
+        pin.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                pinned = !pinned;
+                pin.setText(pinned ? "Bỏ ghim" : "Ghim");
+            }
+        });
+        row.addView(pin);
         if (original != null) {
             final Button del = flatButton("Xóa");
             del.setTextColor(0xFFC2261F);
@@ -116,7 +128,7 @@ public class QuickNoteActivity extends Activity {
         View space = new View(this);
         row.addView(space, new LinearLayout.LayoutParams(0, 1, 1f));
         Button saveBtn = flatButton("Lưu");
-        saveBtn.setTextColor(0xFFC2261F);
+        saveBtn.setTextColor(accent);
         saveBtn.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);
         saveBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -129,7 +141,9 @@ public class QuickNoteActivity extends Activity {
         root.addView(row);
         setContentView(root);
         body.requestFocus();
-        if (original != null) body.setSelection(body.getText().length());
+        // Ghi chú dài: đặt con trỏ ở cuối (tự cuộn tới phần viết sau cùng) nếu bật "xem phần cuối trước".
+        if (original != null && Reminders.prefs(this).getBoolean("tailFirst", true)) body.setSelection(body.getText().length());
+        else if (original != null) body.setSelection(0);
     }
 
     @Override
@@ -159,7 +173,8 @@ public class QuickNoteActivity extends Activity {
     private boolean save(boolean showToast) {
         String t = title.getText().toString().trim(), b = body.getText().toString();
         if (t.isEmpty() && b.trim().isEmpty()) return false;
-        if (original != null && t.equals(original.optString("title")) && b.equals(original.optString("body"))) return false;
+        if (original != null && t.equals(original.optString("title")) && b.equals(original.optString("body"))
+                && pinned == original.optBoolean("pinned")) return false;
         try {
             JSONObject root = NoteStore.readRoot(this);
             JSONObject notes = notes(root);
@@ -168,7 +183,10 @@ public class QuickNoteActivity extends Activity {
                 if (noteId == null) noteId = newId();
                 n = new JSONObject().put("id", noteId).put("pinned", false).put("color", "").put("date", "");
             }
-            n.put("title", t).put("body", b).put("updated", System.currentTimeMillis());
+            boolean textChanged = !t.equals(n.optString("title")) || !b.equals(n.optString("body"));
+            n.put("title", t).put("body", b).put("pinned", pinned);
+            if (textChanged) n.put("updated", System.currentTimeMillis());
+            else if (!n.has("updated")) n.put("updated", System.currentTimeMillis());
             notes.put(noteId, n);
             original = n;
             String json = root.toString();

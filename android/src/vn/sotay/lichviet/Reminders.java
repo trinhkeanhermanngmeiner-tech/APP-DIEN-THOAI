@@ -33,8 +33,7 @@ public class Reminders extends BroadcastReceiver {
     public void onReceive(Context c, Intent intent) {
         postToday(c, ACTION_FIRE.equals(intent.getAction()));
         scheduleNext(c);
-        LichWidget.refreshAll(c);
-        LichMonthWidget.refreshAll(c);
+        Widgets.refreshAll(c);
     }
 
     static String todayKey() {

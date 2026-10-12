@@ -15,6 +15,9 @@
 - Hai tiện ích ngoài màn hình chính (Android): "Tờ lịch (gọn)" 2×2 và "Lịch tháng" 4×4 (ngày âm dương, ngày lễ, ngày nhớ, ghi chú; đổi tháng; chạm vào ngày để ghi chú nhanh)
 - Ghi chú gắn với ngày, hiện trên lịch
 - Tiện ích "Ghi chú" 3×3: danh sách cuộn, chạm để sửa ngay trong cửa sổ nhỏ trên màn hình chính, ＋ để viết mới
+- Tiện ích Ghi chú: ghim, mở rộng từng ghi chú để đọc đủ nội dung (kéo danh sách), ghi chú dài ưu tiên hiện phần cuối
+- Xem lịch cả năm (12 tháng một màn hình, chuyển được giữa ngày dương / ngày âm)
+- 7 theme màu cho app và tiện ích (Sơn mài, Lục bảo, Chàm, Sen, Nghệ, Tím mận, Mực tàu), sáng và tối
 - Tự lưu dữ liệu vào một tệp trên Google Drive; cài lại app thì "Khôi phục từ Google Drive"
 - Chế độ chữ to cho người lớn tuổi
 - Ghi chú có ghim, màu giấy, tìm kiếm

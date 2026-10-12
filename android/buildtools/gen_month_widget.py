@@ -26,7 +26,7 @@ xml = f'''<?xml version="1.0" encoding="utf-8"?>
 <!-- Tiện ích lịch tháng · Sổ Tay Lịch Việt. Tệp sinh tự động bởi buildtools/gen_month_widget.py, đừng sửa tay. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:id="@+id/m_root"
     android:layout_width="match_parent" android:layout_height="match_parent" android:background="@drawable/widget_bg" android:orientation="vertical">
-    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:background="@drawable/widget_band"
+    <LinearLayout android:id="@+id/m_band" android:layout_width="match_parent" android:layout_height="wrap_content" android:background="@drawable/widget_band"
         android:gravity="center_vertical" android:orientation="horizontal" android:paddingTop="4dp" android:paddingBottom="4dp">
         <TextView android:id="@+id/m_prev" android:layout_width="40dp" android:layout_height="36dp" android:gravity="center" android:text="‹"
             android:textColor="#FFF7EE" android:textSize="24sp" android:contentDescription="Tháng trước" />

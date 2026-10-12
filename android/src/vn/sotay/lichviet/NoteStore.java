@@ -9,6 +9,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 /** Tệp dữ liệu chung (so-tay.json) cho giao diện web, cửa sổ ghi chú nhanh và tiện ích. */
 final class NoteStore {
@@ -64,6 +67,40 @@ final class NoteStore {
         } catch (Exception ignored) {
         }
         return root;
+    }
+
+    /** Đổi trạng thái ghim của ghi chú (không đổi giờ sửa để thứ tự không xáo trộn). */
+    static boolean togglePin(Context c, String id) {
+        try {
+            JSONObject root = readRoot(c);
+            JSONObject n = root.getJSONObject("data").getJSONObject("notes").optJSONObject(id);
+            if (n == null) return false;
+            n.put("pinned", !n.optBoolean("pinned"));
+            String json = root.toString();
+            if (!write(c, json)) return false;
+            changed(c, json, true);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /** Các ghi chú đang mở rộng trong tiện ích. */
+    static Set<String> expanded(Context c) {
+        return new HashSet<String>(Reminders.prefs(c).getStringSet("wexp", new HashSet<String>()));
+    }
+
+    static void toggleExpanded(Context c, String id) {
+        Set<String> s = expanded(c);
+        if (!s.remove(id)) s.add(id);
+        Reminders.prefs(c).edit().putStringSet("wexp", s).apply();
+    }
+
+    /** Mở rộng tất cả, hoặc thu gọn tất cả nếu đang có ghi chú mở rộng. */
+    static void toggleAllExpanded(Context c, Collection<String> allIds) {
+        Set<String> next = new HashSet<String>();
+        if (expanded(c).isEmpty()) next.addAll(allIds);
+        Reminders.prefs(c).edit().putStringSet("wexp", next).apply();
     }
 
     /** Sau mỗi lần dữ liệu đổi: tự lưu lên Google Drive (nếu đã liên kết) và làm mới tiện ích ghi chú. */

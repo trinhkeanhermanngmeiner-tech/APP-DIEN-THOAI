@@ -89,6 +89,9 @@ public class LichMonthWidget extends AppWidgetProvider {
         }
 
         RemoteViews v = new RemoteViews(c.getPackageName(), R.layout.widget_thang);
+        v.setInt(R.id.m_root, "setBackgroundResource", Skins.background(c));
+        v.setInt(R.id.m_band, "setBackgroundResource", Skins.band(c));
+        v.setTextColor(R.id.m_foot, Skins.accent(c));
         v.setTextViewText(R.id.m_title, "Tháng " + month + ", " + year);
         String sub = months.optString(String.format(Locale.US, "%04d-%02d", year, month), "");
         v.setTextViewText(R.id.m_sub, sub.isEmpty() ? (days.length() == 0 ? "Mở app một lần để hiện ngày âm" : "") : sub);
@@ -117,7 +120,7 @@ public class LichMonthWidget extends AppWidgetProvider {
             v.setTextColor(MonthIds.SOLAR[i], solarColor);
             v.setTextColor(MonthIds.LUNAR[i], lunarColor);
             v.setInt(MonthIds.CELL[i], "setBackgroundResource",
-                    today ? R.drawable.widget_today : (offDay && inMonth) ? R.drawable.widget_offday : 0);
+                    today ? Skins.today(c) : (offDay && inMonth) ? R.drawable.widget_offday : 0);
 
             SpannableStringBuilder dots = new SpannableStringBuilder();
             if (flags.contains("H") || flags.contains("h")) dot(dots, today ? 0xFFFFFFFF : red);

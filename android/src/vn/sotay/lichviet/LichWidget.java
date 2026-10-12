@@ -34,6 +34,9 @@ public class LichWidget extends AppWidgetProvider {
         String key = String.format(Locale.US, "%04d-%02d-%02d", y, mo, d);
 
         RemoteViews v = new RemoteViews(c.getPackageName(), R.layout.widget_lich);
+        v.setInt(R.id.w_root, "setBackgroundResource", Skins.background(c));
+        v.setInt(R.id.w_month, "setBackgroundResource", Skins.band(c));
+        v.setTextColor(R.id.w_next, Skins.accent(c));
         v.setTextViewText(R.id.w_month, "THÁNG " + mo + " · " + y);
         v.setTextViewText(R.id.w_day, String.valueOf(d));
         v.setTextViewText(R.id.w_wd, WEEKDAYS[wd]);

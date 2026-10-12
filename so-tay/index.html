@@ -41,10 +41,24 @@
   --c1:#FF6B5E; --c2:#F0C062; --c3:#4CC5A2; --c4:#7EA6EE; --c5:#C08BE0; --c6:#F2994A; --c7:#6FC1CF; --c8:#A39C94;
   --n-y:#3A3218; --n-r:#3E2220; --n-g:#1D3326; --n-b:#1E2A3E; --n-v:#2E2440;
   --shadow:0 1px 2px rgba(0,0,0,.5); color-scheme:dark}
-/* màu dải đầu theo từng mục */
-.app[data-tab="events"]{--hero:#A86A06;--hero2:#6B4103}
-.app[data-tab="money"]{--hero:#0E6150;--hero2:#063A30}
-.app[data-tab="notes"]{--hero:#2A2623;--hero2:#141210}
+/* màu nhấn (nút chính, ngày hôm nay, liên kết) theo theme */
+:root{--accent:var(--red);--on-accent:#fff}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--on-accent:#1B0F0E}}
+:root[data-theme="dark"]{--on-accent:#1B0F0E}
+/* Theme màu: mỗi theme có màu dải đầu (sáng/tối) và màu nhấn. Theme "Sơn mài" (mặc định) không đặt data-skin và đổi màu theo từng mục. */
+:root[data-skin="luc"]{--sk-h:#0E6150;--sk-h2:#063A30;--sk-hd:#0B5243;--sk-h2d:#052E26;--sk-a:#0E6150;--sk-ad:#4CC5A2}
+:root[data-skin="cham"]{--sk-h:#23407A;--sk-h2:#12254D;--sk-hd:#1E376A;--sk-h2d:#0F1F42;--sk-a:#2F5DA8;--sk-ad:#7EA6EE}
+:root[data-skin="sen"]{--sk-h:#A8325E;--sk-h2:#6B1737;--sk-hd:#8E2A50;--sk-h2d:#5A1230;--sk-a:#B5386A;--sk-ad:#F08AB0}
+:root[data-skin="nghe"]{--sk-h:#A86A06;--sk-h2:#6B4103;--sk-hd:#8F5A05;--sk-h2d:#573402;--sk-a:#9A5F05;--sk-ad:#F0C062}
+:root[data-skin="tim"]{--sk-h:#5B3A8E;--sk-h2:#32205A;--sk-hd:#4C3077;--sk-h2d:#2A1A4D;--sk-a:#6A45A8;--sk-ad:#C08BE0}
+:root[data-skin="muc"]{--sk-h:#2A2623;--sk-h2:#141210;--sk-hd:#2A2623;--sk-h2d:#141210;--sk-a:#3A3430;--sk-ad:#F0C062}
+:root[data-skin]{--hero:var(--sk-h);--hero2:var(--sk-h2);--accent:var(--sk-a)}
+@media (prefers-color-scheme:dark){:root[data-skin]:not([data-theme="light"]){--hero:var(--sk-hd);--hero2:var(--sk-h2d);--accent:var(--sk-ad)}}
+:root[data-skin][data-theme="dark"]{--hero:var(--sk-hd);--hero2:var(--sk-h2d);--accent:var(--sk-ad)}
+/* màu dải đầu theo từng mục (chỉ theme Sơn mài) */
+:root:not([data-skin]) .app[data-tab="events"]{--hero:#A86A06;--hero2:#6B4103}
+:root:not([data-skin]) .app[data-tab="money"]{--hero:#0E6150;--hero2:#063A30}
+:root:not([data-skin]) .app[data-tab="notes"]{--hero:#2A2623;--hero2:#141210}
 
 *{box-sizing:border-box}
 html,body{height:100%}
@@ -105,7 +119,7 @@ main{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;p
 .view{display:flex;flex-direction:column;gap:16px;padding:16px 16px 8px}
 .sec{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
 .sec h2{margin:0;font:800 19px/1.2 var(--f-display);letter-spacing:-.01em}
-.lnk{border:0;background:none;color:var(--red);font-weight:700;font-size:13px;padding:4px 0}
+.lnk{border:0;background:none;color:var(--accent);font-weight:700;font-size:13px;padding:4px 0}
 .card{background:var(--surface);border-radius:20px;box-shadow:var(--shadow);padding:14px 16px}
 .empty{padding:18px 6px;text-align:center;color:var(--muted);font-size:14px}
 .hint{font-size:13px;color:var(--muted);margin:0}
@@ -134,7 +148,7 @@ main{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;p
 .cd .n small{font:600 13px var(--f-body);letter-spacing:0;margin-left:4px;color:var(--muted)}
 .cd .t{font-weight:700;font-size:14px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .cd .s{font-size:12px;color:var(--muted)}
-.cd.hot{background:var(--red);color:#fff}
+.cd.hot{background:var(--accent);color:var(--on-accent)}
 .cd.hot .n small,.cd.hot .s{color:rgba(255,255,255,.8)}
 .cd.hot .k{background:rgba(255,255,255,.2)!important;color:#fff!important}
 .k-birthday{background:var(--jade-soft);color:var(--jade)}
@@ -191,13 +205,13 @@ main{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;p
 .day .lu svg{width:9px;height:9px}
 .day.sun .sd,.day.off .sd{color:var(--red)}
 .day.off{background:var(--red-soft)}
-.day.today{background:var(--red)}
-.day.today .sd,.day.today .lu{color:#fff}
+.day.today{background:var(--accent)}
+.day.today .sd,.day.today .lu{color:var(--on-accent)}
 .day.sel:not(.today){box-shadow:inset 0 0 0 2px var(--ink)}
 .legend{display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:12px;color:var(--muted);padding:0 4px}
 .legend i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:middle}
 .dayhead{display:flex;gap:14px;align-items:center}
-.dayhead .bn{font:800 52px/.9 var(--f-display);letter-spacing:-.03em;color:var(--red)}
+.dayhead .bn{font:800 52px/.9 var(--f-display);letter-spacing:-.03em;color:var(--accent)}
 .dayhead .tt b{display:block;font:700 17px/1.25 var(--f-display)}
 .dayhead .tt span{font-size:13px;color:var(--muted)}
 
@@ -219,7 +233,7 @@ main{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;p
 
 /* nút chung */
 .btn{border:0;border-radius:14px;padding:12px 16px;font-weight:700;background:var(--ink);color:var(--bg)}
-.btn.red{background:var(--red);color:#fff}
+.btn.red{background:var(--accent);color:var(--on-accent)}
 .btn.ghost{background:var(--surface2);color:var(--ink)}
 .btn.danger{background:var(--red-soft);color:var(--red)}
 .btn.block{width:100%}
@@ -289,6 +303,32 @@ html.big body{zoom:1.15}
 .lockhero svg{width:44px;height:44px;color:var(--gold);flex:none}
 .lockhero b{display:block;font:800 22px/1.2 var(--f-display)}
 .lockhero span{font-size:13px;color:var(--hero-muted)}
+/* xem cả năm */
+.ygrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.ygrid.c2{grid-template-columns:repeat(2,1fr)}
+.ym{background:var(--surface2);border-radius:12px;padding:6px 5px 5px;min-width:0}
+.ym .mh{display:flex;justify-content:space-between;align-items:baseline;width:100%;border:0;background:none;padding:0 1px 3px;color:var(--ink);text-align:left}
+.ym .mh b{font:800 12px/1.2 var(--f-display)}
+.ym .mh span{font-size:8px;color:var(--muted);white-space:nowrap}
+.ymd{display:grid;grid-template-columns:repeat(7,1fr);gap:1px}
+.ymd .wh{font-size:7px;font-weight:700;color:var(--muted);text-align:center;padding:0 0 2px}
+.ymd .wh.sun{color:var(--red)}
+.yd{position:relative;border:0;background:none;padding:0;height:15px;display:grid;place-items:center;font:700 9px/1 var(--f-display);color:var(--ink);border-radius:4px;font-variant-numeric:tabular-nums}
+.ygrid.c2 .yd{height:23px;font-size:11px;border-radius:6px}
+.yd.out{visibility:hidden;pointer-events:none}
+.yd.sun,.yd.off{color:var(--red)}
+.yd.off{background:var(--red-soft)}
+.yd.key{color:var(--gold-ink);text-decoration:underline;text-underline-offset:1px}
+.yd.today{background:var(--accent);color:var(--on-accent);text-decoration:none}
+.yd i{position:absolute;bottom:0;width:3px;height:3px;border-radius:50%;transform:translateX(-50%);background:var(--jade)}
+.yd i.n{background:var(--c4)}
+.yopts{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.yopts .seg{flex:1;min-width:140px}
+/* chọn theme màu */
+.skins{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.skin{border:2px solid transparent;border-radius:14px;background:var(--surface);padding:8px 2px 6px;display:flex;flex-direction:column;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--ink);box-shadow:var(--shadow)}
+.skin i{width:34px;height:34px;border-radius:50%;display:block;box-shadow:inset 0 0 0 1px rgba(0,0,0,.12)}
+.skin[aria-pressed="true"]{border-color:var(--ink)}
 .toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:11px 18px;border-radius:14px;font-size:14px;font-weight:600;z-index:30;max-width:90%;text-align:center}
 @media (prefers-reduced-motion:no-preference){.sheet{animation:up .24s cubic-bezier(.2,.8,.2,1)}@keyframes up{from{transform:translateY(40px);opacity:.5}}}
 @media (max-width:370px){.today .big{font-size:108px}.countdown .n{font-size:76px}.cd{flex-basis:136px}}
@@ -498,7 +538,7 @@ const CATS_OUT=["Ăn uống","Đi chợ","Đi lại","Nhà cửa","Hóa đơn","
 const CATS_IN=["Lương","Thưởng","Bán hàng","Được cho","Hiếu hỷ","Khác"];
 const GIFT_OCC=["Đám cưới","Đám tang","Mừng thọ","Đầy tháng, thôi nôi","Tân gia","Sinh nhật","Khai trương","Ốm đau","Khác"];
 const APP_VERSION="1.0",AUTHOR="BS. Trịnh Kế An",AUTHOR_EMAIL="bstrinhkean@gmail.com";
-const DEFAULT_SETTINGS={showHolidays:true,monthly:true,budget:0,notifyHour:7,bigText:false,lockOn:false,pinHash:"",pinSalt:"",pinLen:4,bioOn:true};
+const DEFAULT_SETTINGS={showHolidays:true,monthly:true,budget:0,notifyHour:7,bigText:false,skin:"macdinh",widgetSkin:"auto",tailFirst:true,lockOn:false,pinHash:"",pinSalt:"",pinLen:4,bioOn:true};
 
 const Store={
   mode:"local", data:{notes:{},events:{},txns:{},gifts:{}}, settings:{...DEFAULT_SETTINGS}, db:null, base:null,
@@ -555,14 +595,16 @@ const kindOf=o=>o.kind==="hol"?"hol":o.kind;
 function kindDot(o){const k=kindOf(o);const ab=k in EV_TYPES?EV_TYPES[k].ab:KIND_AB[k];return`<span class="dot k-${k}">${esc(ab)}</span>`}
 
 /* ================= TRẠNG THÁI GIAO DIỆN ================= */
-const UI={unlocked:false,bioAsked:false,giftQ:"",moneyMode:lsGet("sotay.mmode")==="gift"?"gift":"tx",tab:lsGet("sotay.tab")||"home",calY:0,calM:0,selJd:todayJd(),moneyY:0,moneyM:0,noteQ:"",evFilter:"all",conv:"s"};
+const UI={calMode:lsGet("sotay.calmode")==="year"?"year":"month",calYear:0,yearLunar:false,yearCols:3,unlocked:false,bioAsked:false,giftQ:"",moneyMode:lsGet("sotay.mmode")==="gift"?"gift":"tx",tab:lsGet("sotay.tab")||"home",calY:0,calM:0,selJd:todayJd(),moneyY:0,moneyM:0,noteQ:"",evFilter:"all",conv:"s"};
 if(!["home","cal","events","money","notes"].includes(UI.tab))UI.tab="home";
-{const[,m,y]=jdToDate(todayJd());UI.calY=UI.moneyY=y;UI.calM=UI.moneyM=m}
+{const[,m,y]=jdToDate(todayJd());UI.calY=UI.moneyY=UI.calYear=y;UI.calM=UI.moneyM=m;
+ try{const o=JSON.parse(lsGet("sotay.yopt")||"{}");UI.yearLunar=!!o.l;UI.yearCols=o.c===2?2:3}catch(e){}}
 const TITLES={home:"Sổ Tay Lịch Việt",cal:"Lịch âm dương",events:"Nhắc ngày",money:"Chi tiêu",notes:"Ghi chú"};
 let rq=0;function scheduleRender(){if(rq)return;rq=requestAnimationFrame(()=>{rq=0;render()})}
 let lastTab="";
 function render(){
   document.documentElement.classList.toggle("big",!!Store.settings.bigText);
+  {const sk=Store.settings.skin;if(sk&&sk!=="macdinh")document.documentElement.dataset.skin=sk;else delete document.documentElement.dataset.skin}
   $("#app").dataset.tab=UI.tab;
   if(lastTab!==UI.tab){$("#heroBody").innerHTML="";lastTab=UI.tab}
   for(const t of Object.keys(TITLES))$("#v-"+t).hidden=t!==UI.tab;
@@ -633,12 +675,41 @@ function renderHome(){
 }
 
 /* ---------- Lịch ---------- */
+const calSeg=()=>`<div class="hseg" role="group" aria-label="Kiểu xem lịch"><button data-cmode="month" aria-pressed="${UI.calMode!=="year"}">Tháng</button><button data-cmode="year" aria-pressed="${UI.calMode==="year"}">Cả năm</button></div>`;
+function renderYear(){
+  const Y=UI.calYear,t=todayJd(),start=jdFromDate(1,1,Y),end=jdFromDate(31,12,Y),lun=UI.yearLunar;
+  const occ=occurrences(start,end),by={};occ.forEach(o=>{(by[o.jd]=by[o.jd]||[]).push(o)});const nds=noteDateSet();
+  const tet=lunarToJd(1,1,Y,0);
+  $("#heroBody").innerHTML=calSeg()+`<div class="mnav"><button class="hbtn" data-yr="-1" aria-label="Năm trước">${ICON_CHEV_L}</button>
+    <div class="t"><b>Năm ${Y}</b><span>${canChiYear(Y)}${tet?" · Tết Nguyên Đán "+fmtShort(tet):""}</span></div>
+    <button class="hbtn" data-yr="1" aria-label="Năm sau">${ICON_CHEV_R}</button></div><div style="height:24px"></div>`;
+  let months="";
+  for(let m=1;m<=12;m++){const first=jdFromDate(1,m,Y),dim=jdToDate(jdFromDate(1,m%12+1,m===12?Y+1:Y)-1)[0],lead=(weekday(first)+6)%7;
+    const a=lunarOfJd(first),b=lunarOfJd(first+dim-1);
+    let cells=["T2","T3","T4","T5","T6","T7","CN"].map((w,i)=>`<div class="wh ${i===6?"sun":""}">${w.slice(-1)==="N"?"CN":w.slice(1)}</div>`).join("");
+    for(let i=0;i<lead;i++)cells+=`<span class="yd out"></span>`;
+    for(let d=1;d<=dim;d++){const jd=first+d-1,l=lunarOfJd(jd),os=by[jd]||[],dots=[];
+      if(os.some(o=>o.ev))dots.push("");if(nds.has(jdKey(jd)))dots.push("n");
+      const key=lun&&(l.d===1||l.d===15);
+      cells+=`<button class="yd ${weekday(jd)===0?"sun":""} ${os.some(o=>o.off)?"off":""} ${key?"key":""} ${jd===t?"today":""}" data-yjd="${jd}" aria-label="${fmtDate(jd)}, ${l.d}/${l.m} âm">${lun?l.d:d}${dots.map((c,k)=>`<i class="${c}" style="left:${dots.length===1?50:k?68:32}%"></i>`).join("")}</button>`}
+    months+=`<div class="ym"><button class="mh" data-ymonth="${m}" aria-label="Mở tháng ${m}"><b>Tháng ${m}</b>${lun?`<span>${a.d}/${a.m}–${b.d}/${b.m}</span>`:""}</button><div class="ymd">${cells}</div></div>`}
+  const list=occ.filter(o=>o.kind!=="month");
+  $("#v-cal").innerHTML=`
+  <div class="card calcard"><div class="ygrid ${UI.yearCols===2?"c2":""}" id="yearGrid">${months}</div></div>
+  <div class="view">
+  <div class="yopts"><div class="seg"><button data-yopt="lunar:0" aria-pressed="${!lun}">Ngày dương</button><button data-yopt="lunar:1" aria-pressed="${lun}">Ngày âm</button></div>
+    <div class="seg"><button data-yopt="cols:3" aria-pressed="${UI.yearCols!==2}">3 cột</button><button data-yopt="cols:2" aria-pressed="${UI.yearCols===2}">2 cột</button></div></div>
+  <div class="legend"><span><i style="background:var(--red)"></i>Ngày lễ nghỉ, Chủ nhật</span><span><i style="background:var(--jade)"></i>Ngày nhớ</span><span><i style="background:var(--c4)"></i>Ghi chú</span>${lun?`<span><i style="background:var(--gold)"></i>Mùng 1, rằm</span>`:""}<button class="lnk" data-yr="today" style="margin-left:auto">Về năm nay</button></div>
+  <div class="card"><div class="sec"><h2>Ngày lễ và ngày nhớ năm ${Y}</h2><span class="muted small">${list.length}</span></div>
+    <div class="list" style="margin-top:6px">${list.length?list.map(o=>occRow(o,t,false)).join(""):`<div class="empty">Năm này chưa có ngày nào.</div>`}</div></div>
+  </div>`}
 function renderCal(){
+  if(UI.calMode==="year")return renderYear();
   const Y=UI.calY,M=UI.calM,first=jdFromDate(1,M,Y),dim=jdToDate(jdFromDate(1,M%12+1,M===12?Y+1:Y)-1)[0];
   const lead=(weekday(first)+6)%7,start=first-lead,cells=Math.ceil((lead+dim)/7)*7,t=todayJd();
   const occ=occurrences(start,start+cells-1);const by={};occ.forEach(o=>{(by[o.jd]=by[o.jd]||[]).push(o)});
   const lFirst=lunarOfJd(first),lLast=lunarOfJd(first+dim-1);
-  $("#heroBody").innerHTML=`<div class="mnav"><button class="hbtn" data-cal="-1" aria-label="Tháng trước">${ICON_CHEV_L}</button>
+  $("#heroBody").innerHTML=calSeg()+`<div class="mnav"><button class="hbtn" data-cal="-1" aria-label="Tháng trước">${ICON_CHEV_L}</button>
     <div class="t"><b>Tháng ${M}, ${Y}</b><span>Âm lịch ${lFirst.d}/${lFirst.m} – ${lLast.d}/${lLast.m} · ${canChiYear(lLast.y)}</span></div>
     <button class="hbtn" data-cal="1" aria-label="Tháng sau">${ICON_CHEV_R}</button></div><div style="height:24px"></div>`;
   const nds=noteDateSet();
@@ -723,7 +794,10 @@ function renderMoney(){
 function daysLeft(Y,M){const[d,m,y]=jdToDate(todayJd());const dim=jdToDate(jdFromDate(1,M%12+1,M===12?Y+1:Y)-1)[0];if(y===Y&&m===M)return dim-d+1;if(Y*12+M<y*12+m)return 0;return dim}
 
 /* ---------- Ghi chú ---------- */
-function noteCard(n){const d=new Date(n.updated);return`<button class="note ${n.color?"c-"+n.color:""}" data-note="${n.id}">${n.date?`<span class="notedate">Ngày ${fmtDate(keyJd(n.date))}</span>`:""}${n.title?`<div class="t">${esc(n.title)}</div>`:""}<div class="b">${esc(n.body)}</div><div class="d"><span>${pad(d.getDate())}/${pad(d.getMonth()+1)} · ${pad(d.getHours())}:${pad(d.getMinutes())}</span><span>${n.pinned?"Đã ghim":""}</span></div></button>`}
+function tailBody(b){b=b||"";if(Store.settings.tailFirst===false)return b;const L=b.replace(/\s+$/,"").split("\n");if(L.length<=7&&b.length<=420)return b;
+  const out=[];let len=0;for(let i=L.length-1;i>=0&&out.length<7;i--){let ln=L[i];if(ln.length>420){out.unshift("…"+ln.slice(-420));len+=420;break}if(len+ln.length>420&&out.length)break;out.unshift(ln);len+=ln.length}
+  return(out.length<L.length?"… ":"")+out.join("\n")}
+function noteCard(n){const d=new Date(n.updated);return`<button class="note ${n.color?"c-"+n.color:""}" data-note="${n.id}">${n.date?`<span class="notedate">Ngày ${fmtDate(keyJd(n.date))}</span>`:""}${n.title?`<div class="t">${esc(n.title)}</div>`:""}<div class="b">${esc(tailBody(n.body))}</div><div class="d"><span>${pad(d.getDate())}/${pad(d.getMonth()+1)} · ${pad(d.getHours())}:${pad(d.getMinutes())}</span><span>${n.pinned?"Đã ghim":""}</span></div></button>`}
 function renderNotes(){
   const q=UI.noteQ.trim().toLowerCase(),all=Store.list("notes");
   const notes=all.filter(n=>!q||((n.title||"")+" "+(n.body||"")).toLowerCase().includes(q)).sort((a,b)=>(b.pinned?1:0)-(a.pinned?1:0)||b.updated-a.updated);
@@ -833,6 +907,7 @@ function noteSheet(n,presetDate){
       if(!title&&!body.trim()){if(!isNew)Store.del("notes",note.id);return}
       if(isNew||title!==note.title||body!==note.body||pinned!==!!note.pinned||color!==(note.color||"")||date!==(note.date||""))Store.put("notes",{id:note.id,title,body,pinned,color,date,updated:Date.now()})};
     if(isNew)setTimeout(()=>root.querySelector("#ntBody").focus(),60);
+    else if(Store.settings.tailFirst!==false){const ta=root.querySelector("#ntBody"),e=ta.value.length;ta.setSelectionRange(e,e);setTimeout(()=>{ta.scrollTop=ta.scrollHeight},80)}
   });
 }
 
@@ -880,13 +955,17 @@ function reminderList(){const t=todayJd(),out=[];
     else if(o.kind==="hol")out.push({date:jdKey(o.jd),title:o.title,text:"Hôm nay, "+fmtDate(o.jd)+lun});
     else if(o.kind==="month")out.push({date:jdKey(o.jd),title:"Hôm nay là "+o.title.replace("Mùng","mùng").replace("Rằm","rằm")+" âm lịch",text:"Ngày "+canChiDay(o.jd)+" · nhớ thắp hương"})}
   return out}
-let lastSync="";
+let lastSync="",lastApp="";
 function syncNative(){if(!NATIVE)return;syncWidget();try{
   const color=getComputedStyle($("#app")).getPropertyValue("--hero").trim();if(NATIVE.setBarColor&&color)NATIVE.setBarColor(color);const bg=getComputedStyle(document.body).backgroundColor;if(NATIVE.setNavColor&&bg)NATIVE.setNavColor(bg);
+  const ak=(Store.settings.skin||"macdinh")+"|"+(Store.settings.widgetSkin||"auto")+"|"+(Store.settings.tailFirst!==false);if(ak!==lastApp&&NATIVE.setAppearance){lastApp=ak;NATIVE.setAppearance(Store.settings.skin||"macdinh",Store.settings.widgetSkin||"auto",Store.settings.tailFirst!==false)}
   const json=JSON.stringify(reminderList()),key=json+"|"+Store.settings.notifyHour;if(key!==lastSync&&NATIVE.setReminders){lastSync=key;NATIVE.setReminders(json,Store.settings.notifyHour|0)}}catch(e){}}
 /* Nút Quay lại của Android */
 window.sotayBack=function(){if(!$("#scrim").hidden){closeSheet();return true}if(UI.tab!=="home"){goTab("home");return true}return false};
 
+const SKINS=[["macdinh","Sơn mài","conic-gradient(#C2261F 0 25%,#0E6150 0 50%,#E3AE3F 0 75%,#2A2623 0)"],["luc","Lục bảo","linear-gradient(135deg,#0E6150,#063A30)"],["cham","Chàm","linear-gradient(135deg,#2F5DA8,#12254D)"],["sen","Sen","linear-gradient(135deg,#B5386A,#6B1737)"],["nghe","Nghệ","linear-gradient(135deg,#C98410,#6B4103)"],["tim","Tím mận","linear-gradient(135deg,#6A45A8,#32205A)"],["muc","Mực tàu","linear-gradient(135deg,#4A433E,#141210)"]];
+function skinPickHTML(id,val,auto){const list=auto?[["auto","Theo app","linear-gradient(135deg,#E7E3DC 50%,#8A8279 50%)"],...SKINS]:SKINS;
+  return`<div class="skins" id="${id}">${list.map(([k,n,bg])=>`<button type="button" class="skin" data-sk="${k}" aria-pressed="${k===val}"><i style="background:${bg}"></i>${n}</button>`).join("")}</div>`}
 function settingsSheet(){
   const counts=`${Store.list("events").length} ngày nhớ · ${Store.list("txns").length} khoản thu chi · ${Store.list("notes").length} ghi chú`;
   const th=document.documentElement.dataset.theme||"auto";
@@ -895,9 +974,12 @@ function settingsSheet(){
      <p class="hint" style="margin-top:4px">${Store.mode==="db"?"Lưu riêng trong tài khoản của bạn, mở trên máy khác vẫn thấy. Người khác mở link sẽ có sổ riêng của họ.":NATIVE?"Lưu trong bộ nhớ điện thoại. Hãy xuất bản sao lưu trước khi gỡ app hoặc đổi máy.":"Lưu trong trình duyệt của máy này. Hãy sao lưu định kỳ để không mất khi xóa dữ liệu duyệt web."}</p><p class="hint">${counts}</p></div>
    ${NATIVE?`<div class="field"><label for="sHour">Giờ báo thông báo mỗi ngày</label><select class="in" id="sHour">${[5,6,7,8,9,10,12,18,20,21].map(h=>`<option value="${h}" ${h==Store.settings.notifyHour?"selected":""}>${pad(h)}:00</option>`).join("")}</select><button class="btn ghost" id="sTest" type="button">Thử thông báo</button></div>`:""}
    <div class="field"><span class="lab">Giao diện</span>${segHTML("thm",[["auto","Theo máy"],["light","Sáng"],["dark","Tối"]],th)}</div>
+   <div class="field"><span class="lab">Màu chủ đề</span>${skinPickHTML("skinPick",Store.settings.skin||"macdinh")}</div>
+   ${NATIVE?`<div class="field"><span class="lab">Màu tiện ích màn hình chính</span>${skinPickHTML("wskinPick",Store.settings.widgetSkin||"auto",true)}</div>`:""}
    <label class="toggle"><span>Hiện ngày lễ, Tết</span><input type="checkbox" id="sHol" ${Store.settings.showHolidays?"checked":""}></label>
    <label class="toggle"><span>Nhắc mùng 1 và rằm</span><input type="checkbox" id="sMon" ${Store.settings.monthly?"checked":""}></label>
    <label class="toggle"><span><b>Chữ to, dễ đọc</b><br><span class="hint">Phóng to chữ và tăng độ tương phản cho người lớn tuổi</span></span><input type="checkbox" id="sBig" ${Store.settings.bigText?"checked":""}></label>
+   <label class="toggle"><span><b>Ghi chú dài: xem phần cuối trước</b><br><span class="hint">Xem trước và khi mở ghi chú (cả trong tiện ích) sẽ hiện những dòng viết sau cùng</span></span><input type="checkbox" id="sTail" ${Store.settings.tailFirst!==false?"checked":""}></label>
    <div class="field"><span class="lab">Bảo mật</span>
      <label class="toggle"><span><b>Khóa mục Chi tiêu</b><br><span class="hint">Cần mã PIN${bioAvail?" hoặc vân tay":""} khi mở Chi tiêu và Sổ hiếu hỷ. Các mục khác mở bình thường.</span></span><input type="checkbox" id="sLock" ${lockOn()?"checked":""}></label>
      ${lockOn()&&bioAvail?`<label class="toggle"><span>Mở khóa bằng vân tay / khuôn mặt</span><input type="checkbox" id="sBio" ${Store.settings.bioOn?"checked":""}></label>`:""}
@@ -919,6 +1001,8 @@ function settingsSheet(){
     root.querySelector("#sMon").onchange=e=>Store.setSettings({monthly:e.target.checked});
     wireDrive(root);UI.settingsOpen=true;
     root.querySelector("#sBig").onchange=e=>Store.setSettings({bigText:e.target.checked});
+    root.querySelector("#sTail").onchange=e=>Store.setSettings({tailFirst:e.target.checked});
+    for(const[id,key]of[["#skinPick","skin"],["#wskinPick","widgetSkin"]]){const box=root.querySelector(id);if(box)box.addEventListener("click",e=>{const b=e.target.closest("[data-sk]");if(!b)return;box.querySelectorAll(".skin").forEach(x=>x.setAttribute("aria-pressed",x===b));Store.setSettings({[key]:b.dataset.sk});if(key==="skin")setTimeout(syncNative,0)})}
     root.querySelector("#sLock").onchange=e=>{if(e.target.checked){e.target.checked=false;setupPinSheet()}else{e.target.checked=true;requireUnlock(()=>{Store.setSettings({lockOn:false,pinHash:"",pinSalt:""});toast("Đã tắt khóa mục Chi tiêu")},"Nhập mã PIN để tắt khóa")}};
     const sb=root.querySelector("#sBio");if(sb)sb.onchange=e=>Store.setSettings({bioOn:e.target.checked});
     const sp=root.querySelector("#sPin");if(sp)sp.onclick=()=>requireUnlock(()=>setupPinSheet(),"Nhập mã PIN hiện tại");
@@ -946,6 +1030,11 @@ document.addEventListener("click",e=>{
   const tx=e.target.closest("[data-tx]");if(tx){const x=Store.data.txns[tx.dataset.tx];if(x)txnSheet(x);return}
   const nt=e.target.closest("[data-note]");if(nt){const x=Store.data.notes[nt.dataset.note];if(x)noteSheet(x);return}
   const dd=e.target.closest("[data-day]");if(dd){const jd=+dd.dataset.day,[,m,y]=jdToDate(jd);UI.selJd=jd;UI.calM=m;UI.calY=y;goTab("cal");return}
+  const cm=e.target.closest("[data-cmode]");if(cm){UI.calMode=cm.dataset.cmode;lsSet("sotay.calmode",UI.calMode);if(UI.calMode==="year")UI.calYear=UI.calY;renderCal();return}
+  const yr=e.target.closest("[data-yr]");if(yr){const v=yr.dataset.yr;UI.calYear=v==="today"?jdToDate(todayJd())[2]:UI.calYear+ +v;UI.calYear=Math.max(1901,Math.min(2198,UI.calYear));renderCal();return}
+  const ym=e.target.closest("[data-ymonth]");if(ym){UI.calMode="month";lsSet("sotay.calmode","month");UI.calM=+ym.dataset.ymonth;UI.calY=UI.calYear;const t0=todayJd(),[,tm,ty]=jdToDate(t0);UI.selJd=(tm===UI.calM&&ty===UI.calY)?t0:jdFromDate(1,UI.calM,UI.calY);renderCal();$("#main").scrollTop=0;return}
+  const yd=e.target.closest("[data-yjd]");if(yd){const jd=+yd.dataset.yjd;UI.selJd=jd;daySheet(jd);return}
+  const yo=e.target.closest("[data-yopt]");if(yo){const[k,v]=yo.dataset.yopt.split(":");if(k==="lunar")UI.yearLunar=v==="1";else UI.yearCols=+v===2?2:3;lsSet("sotay.yopt",JSON.stringify({l:UI.yearLunar,c:UI.yearCols}));renderCal();return}
   const day=e.target.closest("[data-jd]");if(day&&day.classList.contains("day")){const jd=+day.dataset.jd,[,m,y]=jdToDate(jd);UI.selJd=jd;if(m!==UI.calM){UI.calM=m;UI.calY=y}renderCal();return}
   const c=e.target.closest("[data-cal]");if(c){const v=c.dataset.cal;if(v==="today"){const t=todayJd(),[,m,y]=jdToDate(t);UI.calM=m;UI.calY=y;UI.selJd=t}else shiftCal(+v);renderCal();return}
   const mm=e.target.closest("[data-mmode]");if(mm){UI.moneyMode=mm.dataset.mmode;lsSet("sotay.mmode",UI.moneyMode);renderMoney();$("#fab").hidden=false;return}
@@ -961,8 +1050,8 @@ document.addEventListener("input",e=>{if(["cvD","cvM","cvY"].includes(e.target.i
 document.addEventListener("change",e=>{if(e.target.id==="tgHol")Store.setSettings({showHolidays:e.target.checked});if(e.target.id==="tgMonth")Store.setSettings({monthly:e.target.checked})});
 $("#btnSettings").addEventListener("click",settingsSheet);
 /* vuốt trái/phải để đổi tháng */
-{let sx=0,sy=0;$("#main").addEventListener("touchstart",e=>{if(!e.target.closest("#calGrid"))return sx=0;sx=e.touches[0].clientX;sy=e.touches[0].clientY},{passive:true});
- $("#main").addEventListener("touchend",e=>{if(!sx)return;const dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;if(Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)*1.5){shiftCal(dx<0?1:-1);renderCal()}sx=0},{passive:true})}
+{let sx=0,sy=0,sg="";$("#main").addEventListener("touchstart",e=>{const g=e.target.closest("#calGrid,#yearGrid");if(!g){sx=0;return}sg=g.id;sx=e.touches[0].clientX;sy=e.touches[0].clientY},{passive:true});
+ $("#main").addEventListener("touchend",e=>{if(!sx)return;const dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;if(Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)*1.5){if(sg==="yearGrid")UI.calYear=Math.max(1901,Math.min(2198,UI.calYear+(dx<0?1:-1)));else shiftCal(dx<0?1:-1);renderCal()}sx=0},{passive:true})}
 /* sang ngày mới khi app để mở qua đêm */
 {let last=todayJd();setInterval(()=>{const t=todayJd();if(t!==last){last=t;render()}},60000)}
 
