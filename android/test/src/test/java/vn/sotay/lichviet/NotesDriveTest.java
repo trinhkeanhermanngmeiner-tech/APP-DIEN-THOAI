@@ -34,6 +34,7 @@ public class NotesDriveTest {
     }
 
     private void run() throws Exception {
+        Pro.set(org.robolectric.RuntimeEnvironment.getApplication(), true);
         android.content.Context c = org.robolectric.RuntimeEnvironment.getApplication();
         NoteStore.write(c, "{\"data\":{\"notes\":{\"a1\":{\"id\":\"a1\",\"title\":\"Đi chợ\",\"body\":\"Rau\\nThịt\",\"pinned\":true,\"color\":\"y\",\"updated\":1}}},\"settings\":{}}");
 

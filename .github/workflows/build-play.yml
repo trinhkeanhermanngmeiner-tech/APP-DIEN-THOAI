@@ -1,0 +1,51 @@
+# Build tệp .aab (có thanh toán Google Play) để nộp lên Play Console.
+# Cách chạy: GitHub → Actions → "Build Play AAB" → Run workflow → tải tệp .aab ở mục Artifacts.
+# Tác giả: BS. Trịnh Kế An (bstrinhkean@gmail.com)
+name: Build Play AAB
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_code:
+        description: "Mã phiên bản (versionCode), phải lớn hơn bản đã nộp trước đó"
+        required: true
+        default: "9"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.14.3"
+
+      - name: Khóa ký (tùy chọn, lấy từ GitHub Secrets)
+        run: |
+          if [ -n "${{ secrets.KEYSTORE_BASE64 }}" ]; then
+            echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > "$RUNNER_TEMP/upload.p12"
+            echo "KEYSTORE=$RUNNER_TEMP/upload.p12" >> "$GITHUB_ENV"
+            echo "KEYSTORE_PASS=${{ secrets.KEYSTORE_PASS }}" >> "$GITHUB_ENV"
+          fi
+
+      - name: Chuẩn bị giao diện web, phông chữ, BuildInfo (bản store)
+        run: ./android/prepare.sh store
+
+      - name: Build .aab
+        run: gradle -p android/gradle :app:bundleRelease -PversionCode=${{ inputs.version_code }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SoTayLichViet-play-aab
+          path: android/gradle/app/build/outputs/bundle/release/*.aab
+          if-no-files-found: error

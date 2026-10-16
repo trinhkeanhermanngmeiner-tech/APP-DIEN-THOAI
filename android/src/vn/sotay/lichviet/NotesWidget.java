@@ -34,6 +34,17 @@ public class NotesWidget extends AppWidgetProvider {
         svc.setData(Uri.parse(svc.toUri(Intent.URI_INTENT_SCHEME)));
         v.setRemoteAdapter(R.id.gc_list, svc);
         v.setEmptyView(R.id.gc_list, R.id.gc_empty);
+        if (!Pro.isPro(c)) {
+            // Bản miễn phí: tiện ích Ghi chú bị khóa, chạm vào đâu cũng mở màn hình mở khóa trong app.
+            v.setTextViewText(R.id.gc_empty, "Tiện ích Ghi chú thuộc Bản Đầy Đủ.\nChạm để mở khóa, chỉ 20.000đ một lần.");
+            PendingIntent buy = PendingIntent.getActivity(c, 34, paywallIntent(c), PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
+            v.setOnClickPendingIntent(R.id.gc_empty, buy);
+            v.setOnClickPendingIntent(R.id.gc_add, buy);
+            v.setOnClickPendingIntent(R.id.gc_all, buy);
+            v.setOnClickPendingIntent(R.id.gc_title, buy);
+            return v;
+        }
+        v.setTextViewText(R.id.gc_empty, "Chưa có ghi chú.\nChạm ＋ để viết ghi chú đầu tiên.");
         // Một mẫu chung cho mọi dòng; từng nút gắn thêm mã ghi chú và hành động (fill-in), nên PendingIntent phải MUTABLE.
         Intent act = new Intent(c, WidgetActionActivity.class);
         v.setPendingIntentTemplate(R.id.gc_list, PendingIntent.getActivity(c, 30, act,
@@ -48,6 +59,18 @@ public class NotesWidget extends AppWidgetProvider {
                 .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         v.setOnClickPendingIntent(R.id.gc_title, PendingIntent.getActivity(c, 32, open, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT));
         return v;
+    }
+
+    static Intent paywallIntent(Context c) {
+        return new Intent(c, MainActivity.class).setAction(Intent.ACTION_VIEW).setData(Uri.parse("sotay://mokhoa"))
+                .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+    }
+
+    /** Đổi trạng thái Bản Đầy Đủ: dựng lại toàn bộ tiện ích (nội dung, nút bấm, danh sách). */
+    static void rebuildAll(Context c) {
+        AppWidgetManager m = AppWidgetManager.getInstance(c);
+        for (int id : ids(c)) m.updateAppWidget(id, build(c, id));
+        refreshAll(c);
     }
 
     private static int[] ids(Context c) {

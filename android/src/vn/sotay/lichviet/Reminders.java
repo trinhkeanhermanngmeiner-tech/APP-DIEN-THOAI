@@ -44,6 +44,7 @@ public class Reminders extends BroadcastReceiver {
 
     /** Hiện thông báo của hôm nay, mỗi ngày một lần. Ngoài báo thức thì chỉ hiện khi đã qua giờ nhắc. */
     static void postToday(Context c, boolean fromAlarm) {
+        if (!Pro.isPro(c)) return; // nhắc ngày thuộc Bản Đầy Đủ
         SharedPreferences p = prefs(c);
         String today = todayKey();
         if (today.equals(p.getString("last", ""))) return;

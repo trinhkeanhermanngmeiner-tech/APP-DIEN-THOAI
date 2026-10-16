@@ -36,6 +36,11 @@ public class QuickNoteActivity extends Activity {
     @Override
     protected void onCreate(Bundle state) {
         super.onCreate(state);
+        if (!Pro.isPro(this)) {
+            startActivity(NotesWidget.paywallIntent(this));
+            finish();
+            return;
+        }
         noteId = getIntent().getStringExtra(EXTRA_ID);
         if (noteId != null) {
             JSONObject notes = notes(NoteStore.readRoot(this));
@@ -150,7 +155,7 @@ public class QuickNoteActivity extends Activity {
     protected void onPause() {
         super.onPause();
         // Chạm ra ngoài hoặc bấm Quay lại cũng tự lưu, giống ghi chú trong app.
-        if (!deleted) save(false);
+        if (!deleted && title != null) save(false);
     }
 
     private Button flatButton(String text) {

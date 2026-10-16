@@ -12,6 +12,8 @@
 Bản APK/AAB có kèm toàn văn giấy phép ở `assets/www/fonts/*-OFL.txt`. Bản web tải hai phông chữ này từ Google Fonts.
 SIL OFL 1.1 cho phép dùng trong ứng dụng thương mại, chỉ cấm bán riêng phông chữ.
 
+Bản nộp Google Play còn dùng thư viện **Google Play Billing Library** (Apache License 2.0) để xử lý việc mua "Bản Đầy Đủ".
+
 ## Thuật toán
 
 Phần tính âm lịch được viết riêng cho ứng dụng này, dựa trên các **công thức thiên văn đã công bố** trong sách

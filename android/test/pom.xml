@@ -9,6 +9,6 @@
 <build><plugins>
 <plugin><groupId>org.codehaus.mojo</groupId><artifactId>build-helper-maven-plugin</artifactId><version>3.6.0</version>
 <executions><execution><phase>generate-test-sources</phase><goals><goal>add-test-source</goal></goals>
-<configuration><sources><source>${project.basedir}/../src</source><source>${project.basedir}/../build/gen</source></sources></configuration></execution></executions></plugin><plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-surefire-plugin</artifactId><version>3.2.5</version>
+<configuration><sources><source>${project.basedir}/../src</source><source>${project.basedir}/../build/gen</source><source>${project.basedir}/../build/buildinfo</source></sources></configuration></execution></executions></plugin><plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-surefire-plugin</artifactId><version>3.2.5</version>
 <configuration><argLine>-Drobolectric.enabledSdks=26,29,30,33,34,35,36 -Dstdout.encoding=UTF-8 --add-opens java.base/java.io=ALL-UNNAMED</argLine><redirectTestOutputToFile>false</redirectTestOutputToFile><trimStackTrace>false</trimStackTrace></configuration></plugin></plugins></build>
 </project>

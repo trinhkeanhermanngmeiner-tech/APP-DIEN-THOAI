@@ -1,0 +1,18 @@
+// Dự án Gradle dùng riêng để build bản nộp Google Play (có thư viện thanh toán Play Billing).
+// Dùng chung mã nguồn với bản APK cài trực tiếp (thư mục ../src, ../res). Chạy qua GitHub Actions: .github/workflows/build-play.yml
+pluginManagement {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+rootProject.name = 'SoTayLichViet'
+include ':app'

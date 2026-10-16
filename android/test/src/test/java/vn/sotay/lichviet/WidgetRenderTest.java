@@ -33,6 +33,7 @@ public class WidgetRenderTest {
 
     @Test
     public void renderWidgets() throws Exception {
+        Pro.set(org.robolectric.RuntimeEnvironment.getApplication(), true);
         Context c = RuntimeEnvironment.getApplication();
         Calendar k = Calendar.getInstance();
         StringBuilder days = new StringBuilder();

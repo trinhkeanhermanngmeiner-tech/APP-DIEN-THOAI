@@ -22,6 +22,7 @@ public class LaunchTest {
         throw new NoSuchMethodException(name);
     }
     private void run() throws Exception {
+        Pro.set(org.robolectric.RuntimeEnvironment.getApplication(), true);
         ActivityController<MainActivity> c = Robolectric.buildActivity(MainActivity.class).setup();
         MainActivity a = c.get();
         ViewGroup root = (ViewGroup) a.findViewById(android.R.id.content);

@@ -1,5 +1,7 @@
 # Sổ Tay Lịch Việt
 
+> **Mô hình bán:** tải miễn phí, chỉ có lịch âm dương. Mở khóa phần còn lại một lần, 20.000đ (Bản Đầy Đủ).
+
 Ứng dụng điện thoại gồm **lịch âm dương, nhắc sinh nhật – đám giỗ – ngày lễ hằng năm, quản lý chi tiêu và ghi chú**.
 
 **Tác giả:** BS. Trịnh Kế An · bstrinhkean@gmail.com
@@ -28,18 +30,21 @@
 |---|---|
 | `so-tay/index.html` | Toàn bộ giao diện và logic (một tệp HTML) |
 | `android/` | Vỏ Android (Java), tài nguyên, script đóng gói `build.sh` |
-| `dist/` | `SoTayLichViet.apk` (cài trực tiếp), `SoTayLichViet.aab` (nộp Google Play) |
+| `dist/` | `SoTayLichViet-dung-thu.apk` (cài trực tiếp để thử, có mã mở khóa thử) |
+| `.github/workflows/` | `build-play.yml`: build `.aab` có thanh toán Google Play |
+| `android/billing/`, `android/gradle/` | Mã thanh toán Play Billing và dự án Gradle (chỉ dùng cho bản Google Play) |
 | `docs/` | Chính sách quyền riêng tư |
 | `store/` | Biểu tượng, ảnh bìa, ảnh chụp màn hình cho trang Google Play |
 
 ## Đóng gói
 ```bash
-android/build.sh            # tạo dist/SoTayLichViet.apk và dist/SoTayLichViet.aab
+android/build.sh            # tạo dist/SoTayLichViet-dung-thu.apk (bản cài trực tiếp để thử)
 KEYSTORE=/duong/dan/upload.p12 KEYSTORE_PASS=... android/build.sh   # ký bằng khóa riêng
+# Bản nộp Google Play (.aab): GitHub → Actions → "Build Play AAB". Xem store/huong-dan-ban-ban-day-du.md
 ```
 Không cần Android Studio; script tự tải aapt2, dx, apksig, bundletool và android.jar.
 
-Kiểm tra mở app trên Android 8 → 16 (Robolectric): `android/test/run.sh` (chạy sau `build.sh`).
+Kiểm tra trên Android 8 → 16 (Robolectric): `android/test/run.sh` (chạy sau `build.sh`).
 
 Phiên bản: tên phiên bản luôn để **1.0**; mã phiên bản (`VERSION_CODE` trong `android/build.sh`) tăng mỗi lần phát hành để máy và Google Play nhận bản cập nhật.
 

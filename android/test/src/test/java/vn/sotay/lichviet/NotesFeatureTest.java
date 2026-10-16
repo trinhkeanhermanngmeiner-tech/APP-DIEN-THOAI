@@ -28,6 +28,7 @@ public class NotesFeatureTest {
     }
 
     private void run() throws Exception {
+        Pro.set(org.robolectric.RuntimeEnvironment.getApplication(), true);
         Context c = RuntimeEnvironment.getApplication();
         // --- tailPreview
         String t = NotesWidgetService.tailPreview(lines(20));

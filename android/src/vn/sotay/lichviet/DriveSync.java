@@ -58,7 +58,7 @@ final class DriveSync {
     }
 
     static void schedule(Context c, String json) {
-        if (uri(c) == null) return;
+        if (uri(c) == null || !Pro.isPro(c)) return;
         synchronized (DriveSync.class) {
             pendingJson = json;
             appContext = c.getApplicationContext();

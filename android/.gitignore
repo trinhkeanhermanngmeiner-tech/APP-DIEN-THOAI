@@ -1,2 +1,5 @@
 build/
 .tools/
+.dev-code
+gradle/.gradle/
+gradle/app/build/

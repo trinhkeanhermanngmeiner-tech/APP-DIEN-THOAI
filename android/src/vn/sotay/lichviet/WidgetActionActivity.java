@@ -19,6 +19,11 @@ public class WidgetActionActivity extends Activity {
     @Override
     protected void onCreate(Bundle state) {
         super.onCreate(state);
+        if (!Pro.isPro(this)) {
+            startActivity(NotesWidget.paywallIntent(this));
+            finish();
+            return;
+        }
         Intent in = getIntent();
         String act = in.getStringExtra(EXTRA_ACTION);
         String id = in.getStringExtra(QuickNoteActivity.EXTRA_ID);

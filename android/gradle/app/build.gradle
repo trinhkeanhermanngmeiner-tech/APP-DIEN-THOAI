@@ -1,0 +1,60 @@
+plugins {
+    id 'com.android.application'
+}
+
+// Tên phiên bản giữ 1.0; versionCode phải tăng mỗi lần nộp lên Google Play (-PversionCode=10 hoặc biến môi trường).
+def vCode = (project.findProperty('versionCode') ?: System.getenv('VERSION_CODE') ?: '9').toInteger()
+
+android {
+    namespace 'vn.sotay.lichviet'
+    compileSdk 36
+
+    defaultConfig {
+        applicationId 'vn.sotay.lichviet'
+        minSdk 26
+        targetSdk 36
+        versionCode vCode
+        versionName '1.0'
+    }
+
+    signingConfigs {
+        release {
+            // Khóa tải lên (upload key). Trên GitHub Actions lấy từ secrets; mặc định dùng khóa trong repo.
+            storeFile file(System.getenv('KEYSTORE') ?: "${rootDir}/../sotay-release.p12")
+            storePassword System.getenv('KEYSTORE_PASS') ?: 'sotaylichviet'
+            keyAlias 'sotay'
+            keyPassword System.getenv('KEYSTORE_PASS') ?: 'sotaylichviet'
+        }
+    }
+
+    buildTypes {
+        release {
+            signingConfig signingConfigs.release
+            minifyEnabled false
+        }
+    }
+
+    sourceSets {
+        main {
+            manifest.srcFile "${rootDir}/../build/gradle-manifest.xml"
+            java.srcDirs = ["${rootDir}/../src", "${rootDir}/../billing", "${rootDir}/../build/buildinfo"]
+            res.srcDirs = ["${rootDir}/../res"]
+            assets.srcDirs = ["${rootDir}/../build/assets"]
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    lint {
+        abortOnError false
+        checkReleaseBuilds false
+    }
+}
+
+dependencies {
+    // Thư viện thanh toán của Google. Nếu Google Play Console báo phiên bản đã cũ, nâng số phiên bản ở đây.
+    implementation 'com.android.billingclient:billing:8.0.0'
+}

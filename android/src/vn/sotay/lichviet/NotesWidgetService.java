@@ -125,7 +125,7 @@ public class NotesWidgetService extends RemoteViewsService {
         @Override
         public void onDataSetChanged() {
             notes.clear();
-            notes.addAll(load(c));
+            if (Pro.isPro(c)) notes.addAll(load(c));
             expanded = NoteStore.expanded(c);
             tailFirst = Reminders.prefs(c).getBoolean("tailFirst", true);
         }

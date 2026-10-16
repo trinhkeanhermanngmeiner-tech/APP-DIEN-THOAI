@@ -8,6 +8,12 @@ final class Widgets {
     private Widgets() {
     }
 
+    /** Đổi trạng thái Bản Đầy Đủ: dựng lại hoàn toàn các tiện ích (tiện ích Ghi chú đổi hẳn nội dung). */
+    static void rebuildAll(Context c) {
+        refreshAll(c);
+        NotesWidget.rebuildAll(c);
+    }
+
     static void refreshAll(Context c) {
         LichWidget.refreshAll(c);
         LichMonthWidget.refreshAll(c);

@@ -152,6 +152,34 @@ public class MainActivity extends Activity {
         }
         Reminders.createChannel(this);
         Reminders.scheduleNext(this);
+        Billing.get(this).setListener(new Runnable() {
+            @Override
+            public void run() {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        sendPro();
+                    }
+                });
+            }
+        });
+        Billing.get(this).connect(this);
+    }
+
+    /** Gửi trạng thái Bản Đầy Đủ (đã mua chưa, giá, lỗi) cho giao diện. */
+    private void sendPro() {
+        web.evaluateJavascript("window.onPro&&window.onPro(" + proInfo() + ")", null);
+    }
+
+    private String proInfo() {
+        Billing b = Billing.get(this);
+        org.json.JSONObject o = new org.json.JSONObject();
+        try {
+            o.put("pro", Pro.isPro(this)).put("price", b.price()).put("err", b.error())
+                    .put("dev", BuildInfo.DEV).put("store", b.available());
+        } catch (Exception ignored) {
+        }
+        return o.toString();
     }
 
     @SuppressWarnings("deprecation")
@@ -240,6 +268,7 @@ public class MainActivity extends Activity {
         String kind = u.getHost(), arg = u.getLastPathSegment();
         if ("ngay".equals(kind) && arg != null && arg.matches("\\d{4}-\\d{2}-\\d{2}"))
             return "window.sotayOpenDay&&window.sotayOpenDay('" + arg + "')";
+        if ("mokhoa".equals(kind)) return "window.sotayPaywall&&window.sotayPaywall()";
         if ("ghichu".equals(kind))
             return "window.sotayOpenNote&&window.sotayOpenNote('" + (arg != null && arg.matches("[a-z0-9]{1,40}") ? arg : "") + "')";
         return null;
@@ -255,6 +284,7 @@ public class MainActivity extends Activity {
     protected void onResume() {
         super.onResume();
         // Ghi chú có thể vừa được sửa từ tiện ích: nạp lại dữ liệu vào giao diện.
+        Billing.get(this).connect(this);
         long ext = Reminders.prefs(this).getLong("extWrite", 0);
         if (ext != seenExtWrite) {
             seenExtWrite = ext;
@@ -506,6 +536,61 @@ public class MainActivity extends Activity {
             Reminders.prefs(MainActivity.this).edit().putString("skin", skin).putString("wskin", widgetSkin)
                     .putBoolean("tailFirst", tailFirst).apply();
             Widgets.refreshAll(MainActivity.this);
+        }
+
+        @JavascriptInterface
+        public boolean isPro() {
+            return Pro.isPro(MainActivity.this);
+        }
+
+        @JavascriptInterface
+        public String proInfo() {
+            return MainActivity.this.proInfo();
+        }
+
+        @JavascriptInterface
+        public void buyPro() {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Billing.get(MainActivity.this).buy(MainActivity.this);
+                    sendPro();
+                }
+            });
+        }
+
+        @JavascriptInterface
+        public void restorePro() {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Billing.get(MainActivity.this).restore(MainActivity.this);
+                }
+            });
+        }
+
+        /** Chỉ dành cho APK cài trực tiếp: nhập mã mở khóa thử. Trả về true nếu mã đúng. */
+        @JavascriptInterface
+        public boolean devUnlock(String code) {
+            boolean ok = Pro.devUnlock(MainActivity.this, code);
+            if (ok) runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    sendPro();
+                }
+            });
+            return ok;
+        }
+
+        @JavascriptInterface
+        public void devLock() {
+            Pro.devLock(MainActivity.this);
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    sendPro();
+                }
+            });
         }
 
         @JavascriptInterface

@@ -14,49 +14,49 @@ Sổ Tay Lịch Việt - Lịch Âm
 
 **Mô tả ngắn** (tối đa 80 ký tự):
 ```
-Lịch âm, nhắc giỗ và sinh nhật, sổ hiếu hỷ, chi tiêu, ghi chú. Không quảng cáo.
+Lịch âm dương miễn phí. Mở khóa nhắc giỗ, chi tiêu, ghi chú một lần 20.000đ.
 ```
 
-**Mô tả đầy đủ** (tối đa 4000 ký tự):
+**Mô tả đầy đủ** (tối đa 4000 ký tự). Phải nói rõ phần miễn phí và phần trả phí, Google yêu cầu mô tả trung thực:
 ```
-Sổ Tay Lịch Việt là cuốn sổ tay của gia đình Việt: xem lịch âm dương, nhớ ngày giỗ cả họ, ghi tiền mừng đám cưới, quản lý chi tiêu và ghi chú, tất cả trong một ứng dụng gọn nhẹ, không quảng cáo, không cần mạng.
+Sổ Tay Lịch Việt là cuốn sổ tay của gia đình Việt: lịch âm dương luôn miễn phí; muốn nhớ ngày giỗ cả họ, ghi tiền mừng đám cưới, quản lý chi tiêu và ghi chú thì mở khóa Bản Đầy Đủ một lần duy nhất. Không quảng cáo, không thuê bao, không cần mạng.
 
-LỊCH ÂM DƯƠNG
+MIỄN PHÍ: LỊCH ÂM DƯƠNG
 • Lịch tháng có ngày âm, can chi ngày tháng năm, hình mặt trăng theo ngày âm
 • Đổi ngày âm sang dương và ngược lại
-• Đầy đủ ngày lễ, Tết Việt Nam theo dương lịch và âm lịch
-• Nhắc mùng 1 và ngày rằm hằng tháng
-• Xem cả năm trên một màn hình, chuyển giữa ngày dương và ngày âm
+• Đầy đủ ngày lễ, Tết Việt Nam theo dương lịch và âm lịch, đánh dấu mùng 1 và rằm
+• Tờ lịch trên màn hình chính: ngày dương, ngày âm, ngày lễ sắp tới
+• Chế độ chữ to, giao diện sáng và tối
 
-NHẮC NGÀY GIỖ, SINH NHẬT, KỶ NIỆM
+BẢN ĐẦY ĐỦ: MỞ KHÓA MỘT LẦN, 20.000đ
+Nhắc ngày giỗ, sinh nhật, kỷ niệm
 • Nhập ngày giỗ theo âm lịch, app tự đổi sang dương lịch mỗi năm
 • Tự tính "giỗ lần thứ mấy", "tròn bao nhiêu tuổi"
 • Nhắc trước 1, 3, 7… ngày bằng thông báo vào giờ bạn chọn
 
-SỔ HIẾU HỶ
+Sổ hiếu hỷ
 • Ghi tiền mừng đám cưới, phúng viếng, mừng thọ, tân gia… theo từng gia đình
 • Khi nhập tên, app nhắc ngay lần trước nhà đó đã mừng mình bao nhiêu
 
-CHI TIÊU
+Chi tiêu
 • Ghi thu chi nhanh: gõ "50k", "1.5tr" là xong
 • Thống kê theo tháng, theo nhóm, đặt ngân sách và cảnh báo khi sắp vượt
-• Khóa mục Chi tiêu bằng mã PIN hoặc vân tay (bật/tắt tùy ý)
+• Khóa bằng mã PIN hoặc vân tay
 
-GHI CHÚ
+Ghi chú
 • Ghi chú nhiều màu giấy, ghim lên đầu, tìm kiếm
-• Gắn ghi chú với một ngày, hiện ngay trên lịch
-• Ghi chú dài: ưu tiên hiện phần viết sau cùng
+• Gắn ghi chú với một ngày, hiện ngay trên lịch; ghi chú dài ưu tiên hiện phần viết sau cùng
 
-TIỆN ÍCH MÀN HÌNH CHÍNH
-• Tờ lịch (gọn): ngày dương, ngày âm, ngày nhớ sắp tới
-• Lịch tháng: xem cả tháng âm dương, ngày lễ, ghi chú; chạm vào ngày để ghi chú nhanh
-• Ghi chú: ghim, mở rộng đọc đủ nội dung và sửa ghi chú ngay trên màn hình chính
+Và còn
+• Xem lịch cả năm trên một màn hình, chuyển giữa ngày dương và ngày âm
+• Tiện ích Lịch tháng và tiện ích Ghi chú (ghim, mở rộng, sửa ngay trên màn hình chính)
+• Tự lưu vào Google Drive của chính bạn, khôi phục khi đổi máy
 • 7 theme màu cho cả app lẫn tiện ích
 
 AN TOÀN VÀ RIÊNG TƯ
 • Không quảng cáo, không thu thập dữ liệu, không cần tài khoản
-• Dữ liệu lưu trên máy của bạn; có thể tự lưu vào Google Drive của chính bạn để khôi phục khi đổi máy
-• Chế độ chữ to, dễ đọc cho người lớn tuổi; giao diện sáng và tối
+• Dữ liệu lưu trên máy của bạn
+• Đã mua thì dùng mãi, khôi phục được khi cài lại hoặc đổi máy cùng tài khoản Google
 
 Tác giả: BS. Trịnh Kế An. Góp ý: bstrinhkean@gmail.com
 ```
@@ -82,10 +82,11 @@ Nên chụp thêm 1–2 ảnh màn hình chính có tiện ích Lịch tháng t�
 | Mục | Trả lời |
 |---|---|
 | Chính sách quyền riêng tư | Dán URL công khai của `docs/chinh-sach-quyen-rieng-tu.html` |
-| Quyền truy cập ứng dụng (App access) | **Mọi chức năng đều dùng được, không cần quyền truy cập đặc biệt** (khóa PIN là tùy chọn, mặc định tắt) |
+| Quyền truy cập ứng dụng (App access) | **Mọi chức năng đều dùng được mà không cần đăng nhập**; phần trả phí mở bằng giao dịch trong ứng dụng, người duyệt có thể mua thử bằng tài khoản kiểm thử giấy phép |
 | Quảng cáo | **Không**, ứng dụng không chứa quảng cáo |
+| Ứng dụng có giao dịch mua trong ứng dụng | **Có**: một sản phẩm mua một lần "Bản Đầy Đủ" (xem `store/huong-dan-ban-ban-day-du.md`) |
 | Mã nhận dạng quảng cáo (Advertising ID) | **Không** sử dụng |
-| Xếp hạng nội dung | Danh mục **Tiện ích, Năng suất, Giao tiếp hoặc Khác** (Utility, Productivity…); trả lời **Không** cho mọi câu về bạo lực, tình dục, ngôn ngữ, chất kích thích, cờ bạc, nội dung do người dùng tạo chia sẻ công khai, mua hàng kỹ thuật số |
+| Xếp hạng nội dung | Danh mục **Tiện ích, Năng suất, Giao tiếp hoặc Khác** (Utility, Productivity…); trả lời **Không** cho mọi câu về bạo lực, tình dục, ngôn ngữ, chất kích thích, cờ bạc, nội dung do người dùng tạo chia sẻ công khai; câu hỏi về mua hàng kỹ thuật số: **Có** (mở khóa tính năng trong ứng dụng) |
 | Đối tượng mục tiêu | **18 tuổi trở lên**; không thu hút trẻ em |
 | Ứng dụng tin tức | **Không** |
 | Ứng dụng chính phủ | **Không** |
@@ -103,14 +104,14 @@ Nên chụp thêm 1–2 ảnh màn hình chính có tiện ích Lịch tháng t�
 
 | Mục | Giá trị |
 |---|---|
-| Tệp tải lên | `dist/SoTayLichViet.aab` |
-| Tên bản phát hành | `1.0 (8)` (số trong ngoặc = mã phiên bản hiện tại) |
+| Tệp tải lên | Tệp `.aab` lấy từ GitHub Actions "Build Play AAB" (có thanh toán Google Play). **Không** dùng `dist/SoTayLichViet-dung-thu.apk` |
+| Tên bản phát hành | `1.0 (9)` (số trong ngoặc = mã phiên bản, nhập khi chạy workflow) |
 | Ghi chú phát hành (vi-VN) | xem bên dưới |
 
 ```
 <vi-VN>
-Phiên bản đầu tiên: lịch âm dương, nhắc giỗ và sinh nhật, sổ hiếu hỷ, chi tiêu có khóa PIN/vân tay, ghi chú, 3 tiện ích màn hình chính, tự lưu vào Google Drive.
+Phiên bản đầu tiên: lịch âm dương miễn phí; Bản Đầy Đủ (mua một lần) mở nhắc giỗ và sinh nhật, sổ hiếu hỷ, chi tiêu có khóa PIN/vân tay, ghi chú, tiện ích màn hình chính, tự lưu vào Google Drive.
 </vi-VN>
 ```
 
-Mỗi lần cập nhật: tăng `VERSION_CODE` trong `android/build.sh` (tên phiên bản vẫn 1.0), chạy `android/build.sh`, tải tệp `.aab` mới lên.
+Mỗi lần cập nhật: chạy lại workflow "Build Play AAB" với mã phiên bản lớn hơn (tên phiên bản vẫn 1.0), tải tệp `.aab` mới lên.
