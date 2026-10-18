@@ -78,10 +78,12 @@ main{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;p
 .hero .drum{position:absolute;width:420px;height:420px;right:-150px;top:-120px;color:var(--gold);opacity:.22;z-index:-1}
 @media (prefers-reduced-motion:no-preference){.hero .drum{animation:spin 160s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}}
 .bar{display:flex;align-items:center;gap:10px;min-height:44px}
-.bar h1{flex:1;margin:0;font:800 22px/1.1 var(--f-display);letter-spacing:-.01em}
+.bar h1{flex:1;min-width:0;margin:0;font:800 20px/1.1 var(--f-display);letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .mode{font-size:12px;display:flex;align-items:center;gap:6px;color:var(--hero-muted)}
 .mode i{width:7px;height:7px;border-radius:50%;background:var(--gold);display:inline-block}
 .mode.sync i{background:#7CE0B8}
+.mode.trial{background:var(--gold);color:#3A2600;padding:5px 10px;border-radius:999px;font-weight:700;font-size:11.5px;cursor:pointer;white-space:nowrap;flex:none}
+.mode.trial i{display:none}
 .hbtn{width:40px;height:40px;border-radius:14px;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.1);color:var(--on-hero);display:grid;place-items:center;flex:none}
 .hbtn svg{width:20px;height:20px}
 .hchip{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:999px;background:rgba(255,255,255,.13);font-size:13px;font-weight:500;color:var(--on-hero)}
@@ -518,7 +520,13 @@ const lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
 const NATIVE=window.AndroidBridge||null;
 /* Bản Đầy Đủ: bản miễn phí chỉ có lịch âm dương. Chỉ áp dụng cho app Android (hoặc thêm ?free=1 vào địa chỉ để thử trên web). */
 const GATED=!!NATIVE||/[?&]free=1\b/.test(location.search);
-const PRO={pro:false,price:"",err:"",dev:false,store:false};
+const PRO={pro:false,purchased:false,trialStart:0,trialDays:14,trialActive:false,trialLeft:0,trialUsed:false,price:"",err:"",dev:false,store:false};
+/* Trạng thái: fresh = chưa dùng thử, active = đang dùng thử, expired = đã hết dùng thử, bought = đã mua */
+const trialState=()=>PRO.purchased?"bought":PRO.trialActive?"active":PRO.trialUsed?"expired":"fresh";
+const trialEndText=()=>{const d=new Date((PRO.trialStart||0)+(PRO.trialDays||14)*864e5);return pad(d.getDate())+"/"+pad(d.getMonth()+1)+"/"+d.getFullYear()};
+const hasUserData=()=>["events","notes","txns","gifts"].some(k=>Store.list(k).length>0);
+function startTrial(){if(NATIVE&&NATIVE.startTrial)NATIVE.startTrial();else toast("Chỉ có trong app cài trên điện thoại")}
+const proCTA=()=>trialState()==="fresh"?"Dùng thử miễn phí "+PRO.trialDays+" ngày":"Mở khóa · "+proPrice();
 function loadPro(){if(NATIVE&&NATIVE.proInfo){try{Object.assign(PRO,JSON.parse(NATIVE.proInfo()))}catch(e){}}}
 const isPro=()=>!GATED||PRO.pro;
 const proPrice=()=>PRO.price||"20.000 ₫";
@@ -565,7 +573,7 @@ const Store={
   mode:"local", data:{notes:{},events:{},txns:{},gifts:{}}, settings:{...DEFAULT_SETTINGS}, db:null, base:null,
   loadLocal(){try{let raw=null;if(NATIVE&&NATIVE.loadData)raw=NATIVE.loadData()||null;if(!raw)raw=lsGet("sotay.v1");
     if(raw){const o=JSON.parse(raw);this.data={notes:o.data?.notes||{},events:o.data?.events||{},txns:o.data?.txns||{},gifts:o.data?.gifts||{}};this.settings={...DEFAULT_SETTINGS,...(o.settings||{})}}}catch(e){}},
-  saveLocal(){const s=JSON.stringify({app:"so-tay-lich-viet",version:1,data:this.data,settings:this.settings});lsSet("sotay.v1",s);if(NATIVE&&NATIVE.saveData)try{NATIVE.saveData(s)}catch(e){}},
+  saveLocal(){const s=JSON.stringify({app:"so-tay-lich-viet",version:1,trial:{start:PRO.trialStart||0},data:this.data,settings:this.settings});lsSet("sotay.v1",s);if(NATIVE&&NATIVE.saveData)try{NATIVE.saveData(s)}catch(e){}},
   async initCloud(){
     if(NATIVE||!window.claude||!window.claude.use)return;
     try{
@@ -630,7 +638,7 @@ function render(){
   if(lastTab!==UI.tab){$("#heroBody").innerHTML="";lastTab=UI.tab}
   for(const t of Object.keys(TITLES))$("#v-"+t).hidden=t!==UI.tab;
   document.querySelectorAll("nav.tabs button").forEach(b=>b.dataset.tab===UI.tab?b.setAttribute("aria-current","page"):b.removeAttribute("aria-current"));
-  $("#hdTitle").textContent=TITLES[UI.tab];
+  $("#hdTitle").textContent=TITLES[UI.tab];renderMode();
   document.querySelectorAll("nav.tabs button").forEach(b=>b.classList.toggle("lk",!isPro()&&LOCKED_TABS.includes(b.dataset.tab)));
   const lockedTab=!isPro()&&LOCKED_TABS.includes(UI.tab);
   $("#fab").hidden=UI.tab==="cal"||lockedTab||(UI.tab==="home"&&!isPro())||(UI.tab==="money"&&isLocked());
@@ -638,7 +646,10 @@ function render(){
   else ({home:renderHome,cal:renderCal,events:renderEvents,money:renderMoney,notes:renderNotes})[UI.tab]();
   syncNative();
 }
-function renderMode(){const el=$("#modeTag");el.classList.toggle("sync",Store.mode==="db");el.querySelector("span").textContent=Store.mode==="db"?"Đồng bộ":"Trên máy";el.hidden=!!NATIVE}
+function renderMode(){const el=$("#modeTag");const trial=GATED&&PRO.trialActive&&!PRO.purchased;
+  el.classList.toggle("sync",Store.mode==="db");el.classList.toggle("trial",trial);
+  if(trial){el.querySelector("span").textContent="Dùng thử · còn "+PRO.trialLeft+" ngày";el.dataset.pw="";el.hidden=false;el.setAttribute("role","button")}
+  else{delete el.dataset.pw;el.removeAttribute("role");el.querySelector("span").textContent=Store.mode==="db"?"Đồng bộ":"Trên máy";el.hidden=!!NATIVE}}
 document.querySelectorAll("nav.tabs button").forEach(b=>b.addEventListener("click",()=>goTab(b.dataset.tab)));
 function goTab(t){UI.tab=t;lsSet("sotay.tab",t);$("#main").scrollTop=0;render()}
 const ICON_CHEV_L=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>`,ICON_CHEV_R=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg>`;
@@ -962,8 +973,9 @@ async function exportICS(){const{text,count}=buildICS();
   if(!ok)openSheet(`<h3>Xuất sang Lịch điện thoại</h3><p class="hint">Trong khung xem này không tải được tệp lịch (.ics). Hãy cài bản APK để có thông báo tự động, hoặc sao chép nội dung dưới đây, lưu thành tệp <b>so-tay.ics</b> rồi mở bằng ứng dụng Lịch.</p><textarea class="in" readonly id="icsTxt" style="min-height:160px;font-size:12px">${esc(text)}</textarea><button class="btn" id="icsCopy">Sao chép</button>`,root=>{root.querySelector("#icsCopy").onclick=()=>copyText(root.querySelector("#icsTxt"))});
   else if(!NATIVE)toast("Đã tạo "+count+" mục lịch cho 5 năm tới")}
 function copyText(ta){const sel=()=>{ta.select();toast("Hãy bấm giữ để sao chép")};if(navigator.clipboard)navigator.clipboard.writeText(ta.value).then(()=>toast("Đã sao chép"),sel);else sel()}
-function backupJSON(){return JSON.stringify({app:"so-tay-lich-viet",version:1,exported:new Date().toISOString(),settings:Store.settings,data:Store.data},null,1)}
+function backupJSON(){return JSON.stringify({app:"so-tay-lich-viet",version:1,exported:new Date().toISOString(),trial:{start:PRO.trialStart||0},settings:Store.settings,data:Store.data},null,1)}
 function importJSON(text){let o;try{o=JSON.parse(text)}catch(e){toast("Tệp sao lưu không đọc được.");return}
+  if(o&&o.trial&&o.trial.start&&NATIVE&&NATIVE.mergeTrial){try{NATIVE.mergeTrial(String(o.trial.start))}catch(e){}}
   if(!o||!o.data){toast("Tệp không phải bản sao lưu của Sổ Tay.");return}let n=0;
   const kinds=["notes","events","txns","gifts"];
   if(Store.mode==="db"){for(const kind of kinds)for(const it of Object.values(o.data[kind]||{})){if(it&&it.id){Store.put(kind,it);n++}}if(o.settings)Store.setSettings(o.settings)}
@@ -1012,7 +1024,7 @@ function settingsSheet(){
      ${lockOn()?`<button class="btn ghost" id="sPin" type="button">Đổi mã PIN</button>`:""}
    </div>
    ${NATIVE&&NATIVE.driveStatus?`<div ${PH}>${driveSectionHTML()}</div>`:""}
-   <div class="field" ${PH}><span class="lab">Sao lưu</span><div class="actions"><button class="btn" id="bkOut">Xuất sao lưu</button><button class="btn ghost" id="bkIn">Nhập sao lưu</button></div></div>
+   <div class="field" ${isPro()||hasUserData()?"":"hidden"}><span class="lab">Sao lưu</span><div class="actions"><button class="btn" id="bkOut">Xuất sao lưu</button><button class="btn ghost" id="bkIn" ${PH}>Nhập sao lưu</button></div></div>
    <div id="bkArea"></div>
    ${NATIVE?"":`<button class="btn ghost block" data-act="ics" ${PH}>Xuất sang Lịch điện thoại (.ics)</button>`}
    <div class="card about"><div class="sec"><h2>Giới thiệu</h2><span class="muted small">Phiên bản ${APP_VERSION}</span></div>
@@ -1026,7 +1038,7 @@ function settingsSheet(){
     root.querySelector("#sHol").onchange=e=>Store.setSettings({showHolidays:e.target.checked});
     root.querySelector("#sMon").onchange=e=>Store.setSettings({monthly:e.target.checked});
     wireDrive(root);UI.settingsOpen=true;
-    {const o=root.querySelector("#pwOpen");if(o)o.onclick=()=>paywallSheet();const rl=root.querySelector("#pwRelock");if(rl)rl.onclick=()=>{try{NATIVE.devLock()}catch(e){}}}
+    {const o=root.querySelector("#pwOpen");if(o)o.onclick=()=>paywallSheet();const rl=root.querySelector("#pwRelock");if(rl)rl.onclick=()=>{try{NATIVE.devLock()}catch(e){}};const rs=root.querySelector("#pwReset");if(rs)rs.onclick=()=>{try{NATIVE.devResetTrial()}catch(e){}}}
     root.querySelector("#sBig").onchange=e=>Store.setSettings({bigText:e.target.checked});
     root.querySelector("#sTail").onchange=e=>Store.setSettings({tailFirst:e.target.checked});
     for(const[id,key]of[["#skinPick","skin"],["#wskinPick","widgetSkin"]]){const box=root.querySelector(id);if(box)box.addEventListener("click",e=>{const b=e.target.closest("[data-sk]");if(!b)return;if(!isPro()&&b.dataset.sk!=="macdinh"&&b.dataset.sk!=="auto"){paywallSheet("Đổi màu chủ đề");return}box.querySelectorAll(".skin").forEach(x=>x.setAttribute("aria-pressed",x===b));Store.setSettings({[key]:b.dataset.sk});if(key==="skin")setTimeout(syncNative,0)})}
@@ -1081,7 +1093,9 @@ $("#btnSettings").addEventListener("click",settingsSheet);
 {let sx=0,sy=0,sg="";$("#main").addEventListener("touchstart",e=>{const g=e.target.closest("#calGrid,#yearGrid");if(!g){sx=0;return}sg=g.id;sx=e.touches[0].clientX;sy=e.touches[0].clientY},{passive:true});
  $("#main").addEventListener("touchend",e=>{if(!sx)return;const dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;if(Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)*1.5){if(sg==="yearGrid")UI.calYear=Math.max(1901,Math.min(2198,UI.calYear+(dx<0?1:-1)));else shiftCal(dx<0?1:-1);renderCal()}sx=0},{passive:true})}
 /* sang ngày mới khi app để mở qua đêm */
-{let last=todayJd();setInterval(()=>{const t=todayJd();if(t!==last){last=t;render()}},60000)}
+{let last=todayJd();setInterval(()=>{const t=todayJd();let ch=t!==last;last=t;
+  if(NATIVE&&NATIVE.proInfo){const was=PRO.pro,left=PRO.trialLeft;loadPro();if(PRO.pro!==was)window.onPro(PRO);else if(PRO.trialLeft!==left)ch=true}
+  if(ch)render()},60000)}
 
 
 /* ================= KHÓA MỤC CHI TIÊU ================= */
@@ -1280,33 +1294,41 @@ const LOCK_INFO={
 function renderLockedTab(tab){const[t,d]=LOCK_INFO[tab];
   $("#heroBody").innerHTML=`<div class="lockhero">${ICON_LOCK}<div><b>${t}</b><span>Thuộc Bản Đầy Đủ</span></div></div><div style="height:20px"></div>`;
   $("#v-"+tab).innerHTML=`<div class="view"><div class="card"><div class="sec"><h2>${t}</h2></div><p class="hint" style="margin-top:8px;font-size:14px">${d}</p>
-    <button class="btn red block" data-pw="${esc(t)}" type="button" style="margin-top:14px">Mở khóa · ${esc(proPrice())}</button><p class="hint" style="text-align:center;margin-top:8px">Trả một lần, dùng mãi. Không quảng cáo.</p></div></div>`}
-function proPromoHTML(){return`<div class="card"><div class="sec"><h2>Bản Đầy Đủ</h2><span class="badge gold">${esc(proPrice())}</span></div>
+    <button class="btn red block" data-pw="${esc(t)}" type="button" style="margin-top:14px">${esc(proCTA())}</button><p class="hint" style="text-align:center;margin-top:8px">${trialState()==="fresh"?"Dùng đủ tính năng "+PRO.trialDays+" ngày, không cần thẻ. Sau đó mở khóa một lần "+esc(proPrice())+".":trialState()==="expired"?"Đã hết thời gian dùng thử. Dữ liệu bạn nhập vẫn được giữ.":"Trả một lần, dùng mãi. Không quảng cáo."}</p></div></div>`}
+function proPromoHTML(){const fresh=trialState()==="fresh";return`<div class="card"><div class="sec"><h2>Bản Đầy Đủ</h2><span class="badge gold">${fresh?PRO.trialDays+" ngày miễn phí":esc(proPrice())}</span></div>
   <ul class="pwlist" style="margin-top:12px">${PRO_FEATURES.slice(0,4).map(([t,d])=>`<li>${ICON_CHECK}<div><b>${t}</b><span>${d}</span></div></li>`).join("")}</ul>
-  <button class="btn red block" data-pw="" type="button" style="margin-top:14px">Xem tất cả và mở khóa</button>
-  <p class="hint" style="text-align:center;margin-top:8px">Trả một lần, dùng mãi. Lịch âm dương luôn miễn phí.</p></div>`}
-function proCardHTML(){if(!GATED)return"";
-  if(isPro())return`<div class="card"><div class="sec"><h2>Bản Đầy Đủ</h2><span class="badge" style="background:var(--jade-soft);color:var(--jade)">Đã mở khóa</span></div><p class="hint" style="margin-top:6px">Cảm ơn bạn đã ủng hộ. Mọi tính năng đang mở.</p>${PRO.dev?`<button class="btn ghost" id="pwRelock" type="button" style="margin-top:10px">Khóa lại (chỉ để thử)</button>`:""}</div>`;
-  return`<div class="card"><div class="sec"><h2>Bản Đầy Đủ</h2></div><p class="hint" style="margin-top:6px">Bạn đang dùng bản miễn phí: lịch âm dương. Mở khóa một lần để dùng nhắc ngày giỗ, chi tiêu, sổ hiếu hỷ, ghi chú, tiện ích, Google Drive…</p><button class="btn red block" id="pwOpen" type="button" style="margin-top:10px">Mở khóa · ${esc(proPrice())}</button></div>`}
-function paywallSheet(hint){
-  openSheet(`<h3>Mở khóa Bản Đầy Đủ</h3>
+  <button class="btn red block" data-pw="" type="button" style="margin-top:14px">${fresh?"Dùng thử miễn phí "+PRO.trialDays+" ngày":"Xem tất cả và mở khóa"}</button>
+  <p class="hint" style="text-align:center;margin-top:8px">${fresh?"Không cần thẻ. Sau đó mở khóa một lần "+esc(proPrice())+" hoặc chỉ dùng lịch âm dương miễn phí.":"Trả một lần, dùng mãi. Lịch âm dương luôn miễn phí."}</p>
+  ${NATIVE&&NATIVE.driveRestore&&!hasUserData()?`<button class="btn ghost block" data-act="driveRestore" type="button" style="margin-top:10px">Đã dùng trước đây? Khôi phục từ Google Drive</button>`:""}</div>`}
+function proCardHTML(){if(!GATED)return"";const st=trialState();
+  const dev=PRO.dev?`<div class="actions" style="margin-top:10px">${PRO.purchased?`<button class="btn ghost" id="pwRelock" type="button">Khóa lại (chỉ để thử)</button>`:""}<button class="btn ghost" id="pwReset" type="button">Đặt lại dùng thử (chỉ để thử)</button></div>`:"";
+  if(st==="bought")return`<div class="card"><div class="sec"><h2>Bản Đầy Đủ</h2><span class="badge" style="background:var(--jade-soft);color:var(--jade)">Đã mở khóa</span></div><p class="hint" style="margin-top:6px">Cảm ơn bạn đã ủng hộ. Mọi tính năng đang mở.</p>${dev}</div>`;
+  if(st==="active")return`<div class="card"><div class="sec"><h2>Bản Đầy Đủ</h2><span class="badge gold">Dùng thử · còn ${PRO.trialLeft} ngày</span></div><p class="hint" style="margin-top:6px">Đang dùng đủ tính năng đến hết ngày ${trialEndText()}. Sau đó chỉ còn lịch âm dương; dữ liệu bạn nhập vẫn được giữ.</p><button class="btn red block" id="pwOpen" type="button" style="margin-top:10px">Mở khóa · ${esc(proPrice())}</button>${dev}</div>`;
+  if(st==="expired")return`<div class="card"><div class="sec"><h2>Bản Đầy Đủ</h2></div><p class="hint" style="margin-top:6px">Đã hết thời gian dùng thử (${trialEndText()}). Lịch âm dương vẫn dùng bình thường và dữ liệu của bạn vẫn được giữ. Mở khóa một lần để dùng tiếp.</p><button class="btn red block" id="pwOpen" type="button" style="margin-top:10px">Mở khóa · ${esc(proPrice())}</button>${dev}</div>`;
+  return`<div class="card"><div class="sec"><h2>Bản Đầy Đủ</h2></div><p class="hint" style="margin-top:6px">Bạn đang dùng bản miễn phí: lịch âm dương. Dùng thử miễn phí ${PRO.trialDays} ngày đủ tính năng: nhắc ngày giỗ, chi tiêu, sổ hiếu hỷ, ghi chú, tiện ích, Google Drive…</p><button class="btn red block" id="pwOpen" type="button" style="margin-top:10px">Dùng thử miễn phí ${PRO.trialDays} ngày</button>${dev}</div>`}
+function paywallSheet(hint){const st=trialState(),fresh=st==="fresh";
+  openSheet(`<h3>${fresh?"Dùng thử miễn phí "+PRO.trialDays+" ngày":st==="expired"?"Đã hết thời gian dùng thử":"Mở khóa Bản Đầy Đủ"}</h3>
    ${hint?`<p class="hint" style="font-size:14px"><b>${esc(hint)}</b> thuộc Bản Đầy Đủ.</p>`:""}
-   <div class="pwprice">${esc(proPrice())}<small>Trả một lần, dùng mãi. Không quảng cáo, không thuê bao.</small></div>
+   ${fresh?`<div class="card"><p style="margin:0;font-size:14px;line-height:1.5"><b>Dùng đủ mọi tính năng trong ${PRO.trialDays} ngày.</b> Không cần thẻ, không tự trừ tiền. Hết ${PRO.trialDays} ngày, nếu chưa mở khóa thì chỉ còn lịch âm dương; dữ liệu bạn nhập vẫn được giữ và xuất sao lưu được. Ngày dùng thử chỉ bắt đầu tính khi bạn bấm nút bên dưới.</p></div>`
+     :st==="expired"?`<div class="card"><p style="margin:0;font-size:14px;line-height:1.5">Bạn đã dùng thử ${PRO.trialDays} ngày (hết ngày ${trialEndText()}). Lịch âm dương vẫn dùng bình thường. Dữ liệu bạn đã nhập vẫn được giữ; xuất sao lưu ở Cài đặt → Sao lưu. Mở khóa một lần để dùng tiếp.</p></div>`:""}
+   <div class="pwprice">${esc(proPrice())}<small>${fresh?"Sau thời gian dùng thử, mở khóa một lần. ":"Trả một lần, dùng mãi. "}Không quảng cáo, không thuê bao.</small></div>
    <div class="card"><ul class="pwlist">${PRO_FEATURES.map(([t,d])=>`<li>${ICON_CHECK}<div><b>${t}</b><span>${d}</span></div></li>`).join("")}</ul></div>
    <p class="hint">Bản miễn phí giữ nguyên lịch âm dương: ngày âm, can chi, ngày lễ, đổi ngày âm dương và tiện ích tờ lịch.</p>
    ${PRO.err?`<p class="hint" style="color:var(--red);font-weight:600">${esc(PRO.err)}</p>`:""}
-   <button class="btn red block" id="pwBuy" type="button">Mở khóa · ${esc(proPrice())}</button>
+   ${fresh?`<button class="btn red block" id="pwTrial" type="button">Bắt đầu dùng thử ${PRO.trialDays} ngày</button><button class="btn ghost block" id="pwBuy" type="button">Mở khóa luôn · ${esc(proPrice())}</button>`:`<button class="btn red block" id="pwBuy" type="button">Mở khóa · ${esc(proPrice())}</button>`}
    <button class="btn ghost block" id="pwRestore" type="button">Khôi phục giao dịch đã mua</button>
    ${PRO.dev?`<div class="card"><b>Bản dùng thử (APK cài trực tiếp)</b><div class="field" style="margin-top:8px"><input class="in num" id="pwCode" inputmode="numeric" placeholder="Mã mở khóa thử" aria-label="Mã mở khóa thử"><button class="btn" id="pwDev" type="button">Mở khóa bằng mã</button></div></div>`:""}`,root=>{
     UI.paywallOpen=true;UI.paywallHint=hint||"";
+    const tr=root.querySelector("#pwTrial");if(tr)tr.onclick=startTrial;
     root.querySelector("#pwBuy").onclick=()=>{if(NATIVE&&NATIVE.buyPro)NATIVE.buyPro();else toast("Chỉ mua được trong app cài trên điện thoại")};
     root.querySelector("#pwRestore").onclick=()=>{if(NATIVE&&NATIVE.restorePro){NATIVE.restorePro();toast("Đang kiểm tra giao dịch…")}else toast("Chỉ có trong app cài trên điện thoại")};
     const dv=root.querySelector("#pwDev");if(dv)dv.onclick=()=>{let ok=false;try{ok=NATIVE.devUnlock(root.querySelector("#pwCode").value)}catch(e){}if(!ok)toast("Mã chưa đúng")}})}
 /* Android báo trạng thái mua thay đổi */
 window.onPro=function(info){if(typeof info==="string")try{info=JSON.parse(info)}catch(e){info={}}
-  const was=PRO.pro;Object.assign(PRO,info||{});lastWidgetKey="";lastSync="";lastApp="";
-  if(PRO.pro&&!was){if(UI.paywallOpen||UI.settingsOpen)closeSheet();toast("Đã mở khóa Bản Đầy Đủ. Cảm ơn bạn!")}
-  else if(!PRO.pro&&was)toast("Bản Đầy Đủ đã được khóa lại.");
+  const was=PRO.pro,wasTrial=PRO.trialStart;Object.assign(PRO,info||{});lastWidgetKey="";lastSync="";lastApp="";
+  if(PRO.trialStart&&PRO.trialStart!==wasTrial&&Store.mode!=="db")Store.saveLocal(); /* ghi ngày dùng thử vào tệp dữ liệu (để sao lưu / Google Drive nhớ) */
+  if(PRO.pro&&!was){if(UI.paywallOpen||UI.settingsOpen)closeSheet();toast(PRO.purchased?"Đã mở khóa Bản Đầy Đủ. Cảm ơn bạn!":"Bắt đầu dùng thử "+PRO.trialDays+" ngày. Chúc bạn dùng vui!")}
+  else if(!PRO.pro&&was)toast(PRO.trialUsed&&!PRO.purchased?"Đã hết thời gian dùng thử. Dữ liệu của bạn vẫn được giữ.":"Bản Đầy Đủ đã được khóa lại.");
   else if(UI.paywallOpen)paywallSheet(UI.paywallHint);
   render()};
 window.sotayPaywall=function(){if(!$("#scrim").hidden)closeSheet();if(!isPro())paywallSheet()};

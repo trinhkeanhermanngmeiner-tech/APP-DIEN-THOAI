@@ -1,11 +1,11 @@
 # Hướng dẫn thiết lập bán "Bản Đầy Đủ" 20.000đ trên Google Play
 
-Mô hình: tải miễn phí, chỉ có lịch âm dương. Mua một lần **20.000đ** để mở khóa phần còn lại.
+Mô hình: tải miễn phí, **dùng thử đủ tính năng 14 ngày**, sau đó chỉ còn lịch âm dương. Mua một lần **20.000đ** để mở khóa phần còn lại.
 Tác giả: BS. Trịnh Kế An · bstrinhkean@gmail.com
 
 > Các bước và tên mục dưới đây theo hiểu biết tại thời điểm viết; Play Console có thể đổi tên hoặc vị trí. Nếu khác, làm theo những gì Console hiện.
 
-## Phần tính năng
+## Phần tính năng (14 ngày đầu dùng thử: dùng được tất cả)
 
 | Miễn phí | Bản Đầy Đủ (20.000đ) |
 |---|---|
@@ -15,6 +15,19 @@ Tác giả: BS. Trịnh Kế An · bstrinhkean@gmail.com
 | Chế độ chữ to, giao diện sáng/tối | Xem lịch cả năm, 7 theme màu, tự lưu Google Drive, sao lưu |
 
 Muốn đổi ranh giới này, sửa các điểm kiểm tra `isPro()` trong `so-tay/index.html` và `Pro.isPro()` trong `android/src`.
+
+## Dùng thử 14 ngày hoạt động thế nào
+- **Chỉ bắt đầu khi người dùng bấm "Bắt đầu dùng thử 14 ngày"** (lần đầu chạm vào một tính năng trả phí). Cài app xong mà chỉ xem lịch âm thì chưa mất ngày nào.
+- Trong thời gian thử có nhãn "Dùng thử · còn N ngày" trên đầu app. Còn 2 ngày thì có thông báo báo trước (nêu số ngày nhớ sắp không được nhắc); hết hạn có thông báo một lần.
+- Hết hạn: nhắc ngày, chi tiêu, ghi chú, tiện ích Ghi chú... bị khóa; **dữ liệu vẫn được giữ** và vẫn xuất sao lưu được (Cài đặt → Sao lưu). Mua xong là mở lại ngay.
+- Google Play Billing **không có dùng thử miễn phí cho sản phẩm mua một lần**, nên thời gian thử do app tự tính, không do Google quản lý.
+- **Hạn chế xóa rồi cài lại để dùng thử tiếp** (không thể chặn tuyệt đối vì app không có máy chủ):
+  1. Ngày bắt đầu nằm trong **sao lưu tự động của Android** (cùng tài khoản Google, cài lại vẫn nhớ). Sao lưu chạy ngầm mỗi ngày khi máy sạc và có Wi-Fi nên không tức thì.
+  2. Ngày bắt đầu còn nằm trong **tệp dữ liệu / bản sao lưu Google Drive**. Cài lại rồi "Khôi phục từ Google Drive" sẽ lấy ngày sớm nhất, nên không bắt đầu lại.
+  3. **Chống chỉnh lùi đồng hồ**: thời gian trong app không bao giờ lùi.
+  4. Ngày dùng thử chỉ bắt đầu được **một lần** trên mỗi bản cài đặt.
+- Vẫn còn kẽ hở: tắt sao lưu của Android, xóa dữ liệu app hoặc gỡ cài lại, và không khôi phục dữ liệu cũ thì được dùng thử lại, nhưng khi đó họ mất toàn bộ dữ liệu đã nhập. Với giá 20.000đ đây là mức chấp nhận được.
+- Cần ghi rõ về dùng thử trong mô tả cửa hàng (đã có sẵn trong `store/noi-dung-chplay.md`).
 
 ## Hai loại file khác nhau, đừng nhầm
 
@@ -27,7 +40,7 @@ Muốn đổi ranh giới này, sửa các điểm kiểm tra `isPro()` trong `s
 
 ## Bước 1: Build file .aab bằng GitHub Actions
 1. Đưa nhánh có thư mục `.github/workflows/build-play.yml` lên nhánh chính (main) của repo (GitHub chỉ cho chạy workflow từ nhánh chính).
-2. GitHub → **Actions** → **Build Play AAB** → **Run workflow** → nhập **mã phiên bản** (9, sau đó 10, 11…) → chạy.
+2. GitHub → **Actions** → **Build Play AAB** → **Run workflow** → nhập **mã phiên bản** (10, sau đó 11, 12…) → chạy.
 3. Chờ khoảng 5–10 phút, tải file ở mục **Artifacts** (`SoTayLichViet-play-aab`).
 4. Lần đầu có thể lỗi do phiên bản công cụ; xem nhật ký (log) và báo lại để sửa. Bản build này chưa được thử trong môi trường phát triển vì bị chặn kho thư viện của Google.
 5. (Khuyến nghị) Tạo khóa tải lên riêng: Settings → Secrets → thêm `KEYSTORE_BASE64` (nội dung `base64` của file .p12) và `KEYSTORE_PASS`. Nếu bỏ qua, workflow dùng khóa đang nằm trong repo (`android/sotay-release.p12`); nên để repo ở chế độ riêng tư.
@@ -51,7 +64,7 @@ Làm theo hướng dẫn đăng app (tạo app, khai báo nội dung, trang cử
 ## Bước 5: Thử mua với tài khoản kiểm thử
 1. **Cài đặt → Kiểm thử giấy phép** (License testing): thêm Gmail của bạn và của 12 người thử. Họ mua thử **không bị trừ tiền** (thẻ thử nghiệm), giao dịch tự hủy.
 2. Người thử vào đường link tham gia kiểm thử, cài app từ Google Play (không cài APK dùng thử).
-3. Mở app → Mở khóa → mua thử → kiểm tra các tính năng mở ra; thử **Cài đặt → Bản Đầy Đủ**. Gỡ app, cài lại, bấm "Khôi phục giao dịch đã mua" để thử khôi phục.
+3. Mở app → bấm tính năng trả phí → thử "Bắt đầu dùng thử 14 ngày" (không cần mua); rồi thử Mở khóa → mua thử → kiểm tra các tính năng mở ra; thử **Cài đặt → Bản Đầy Đủ**. Gỡ app, cài lại, bấm "Khôi phục giao dịch đã mua" để thử khôi phục.
 4. Thử hoàn tiền / hủy giao dịch thử: lần mở app kế tiếp tính năng phải bị khóa lại.
 
 ## Bước 6: Phát hành

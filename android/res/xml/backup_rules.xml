@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Sao lưu tự động (Android 6–11): chỉ ngày bắt đầu dùng thử và tệp dữ liệu của người dùng.
+     Nhờ đó cài lại bằng cùng tài khoản Google vẫn nhớ ngày dùng thử và lấy lại dữ liệu. -->
+<full-backup-content>
+    <include domain="sharedpref" path="sotay_trial.xml" />
+    <include domain="file" path="so-tay.json" />
+</full-backup-content>

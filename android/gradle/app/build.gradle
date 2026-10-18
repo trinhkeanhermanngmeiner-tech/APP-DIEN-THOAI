@@ -3,7 +3,7 @@ plugins {
 }
 
 // Tên phiên bản giữ 1.0; versionCode phải tăng mỗi lần nộp lên Google Play (-PversionCode=10 hoặc biến môi trường).
-def vCode = (project.findProperty('versionCode') ?: System.getenv('VERSION_CODE') ?: '9').toInteger()
+def vCode = (project.findProperty('versionCode') ?: System.getenv('VERSION_CODE') ?: '10').toInteger()
 
 android {
     namespace 'vn.sotay.lichviet'

@@ -1,6 +1,6 @@
 # Sổ Tay Lịch Việt
 
-> **Mô hình bán:** tải miễn phí, chỉ có lịch âm dương. Mở khóa phần còn lại một lần, 20.000đ (Bản Đầy Đủ).
+> **Mô hình bán:** tải miễn phí, dùng thử đủ tính năng 14 ngày (tính từ lần đầu bấm dùng thử), sau đó chỉ còn lịch âm dương. Mở khóa phần còn lại một lần, 20.000đ (Bản Đầy Đủ).
 
 Ứng dụng điện thoại gồm **lịch âm dương, nhắc sinh nhật – đám giỗ – ngày lễ hằng năm, quản lý chi tiêu và ghi chú**.
 

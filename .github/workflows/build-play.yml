@@ -9,7 +9,7 @@ on:
       version_code:
         description: "Mã phiên bản (versionCode), phải lớn hơn bản đã nộp trước đó"
         required: true
-        default: "9"
+        default: "10"
 
 jobs:
   build:

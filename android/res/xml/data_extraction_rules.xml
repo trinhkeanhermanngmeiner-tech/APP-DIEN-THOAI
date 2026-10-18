@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Sao lưu lên đám mây và chuyển máy (Android 12 trở lên): cùng nội dung với backup_rules.xml. -->
+<data-extraction-rules>
+    <cloud-backup>
+        <include domain="sharedpref" path="sotay_trial.xml" />
+        <include domain="file" path="so-tay.json" />
+    </cloud-backup>
+    <device-transfer>
+        <include domain="sharedpref" path="sotay_trial.xml" />
+        <include domain="file" path="so-tay.json" />
+    </device-transfer>
+</data-extraction-rules>

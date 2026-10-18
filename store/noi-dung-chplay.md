@@ -14,12 +14,12 @@ Sổ Tay Lịch Việt - Lịch Âm
 
 **Mô tả ngắn** (tối đa 80 ký tự):
 ```
-Lịch âm dương miễn phí. Mở khóa nhắc giỗ, chi tiêu, ghi chú một lần 20.000đ.
+Lịch âm dương miễn phí. Dùng thử 14 ngày đủ tính năng, mở khóa 20.000đ.
 ```
 
 **Mô tả đầy đủ** (tối đa 4000 ký tự). Phải nói rõ phần miễn phí và phần trả phí, Google yêu cầu mô tả trung thực:
 ```
-Sổ Tay Lịch Việt là cuốn sổ tay của gia đình Việt: lịch âm dương luôn miễn phí; muốn nhớ ngày giỗ cả họ, ghi tiền mừng đám cưới, quản lý chi tiêu và ghi chú thì mở khóa Bản Đầy Đủ một lần duy nhất. Không quảng cáo, không thuê bao, không cần mạng.
+Sổ Tay Lịch Việt là cuốn sổ tay của gia đình Việt: lịch âm dương luôn miễn phí; muốn nhớ ngày giỗ cả họ, ghi tiền mừng đám cưới, quản lý chi tiêu và ghi chú thì dùng thử miễn phí đủ tính năng 14 ngày, rồi mở khóa Bản Đầy Đủ một lần duy nhất. Không quảng cáo, không thuê bao, không cần mạng.
 
 MIỄN PHÍ: LỊCH ÂM DƯƠNG
 • Lịch tháng có ngày âm, can chi ngày tháng năm, hình mặt trăng theo ngày âm
@@ -28,7 +28,10 @@ MIỄN PHÍ: LỊCH ÂM DƯƠNG
 • Tờ lịch trên màn hình chính: ngày dương, ngày âm, ngày lễ sắp tới
 • Chế độ chữ to, giao diện sáng và tối
 
-BẢN ĐẦY ĐỦ: MỞ KHÓA MỘT LẦN, 20.000đ
+BẢN ĐẦY ĐỦ: DÙNG THỬ MIỄN PHÍ 14 NGÀY, SAU ĐÓ MỞ KHÓA MỘT LẦN 20.000đ
+• Dùng thử không cần thẻ, không tự trừ tiền; 14 ngày chỉ bắt đầu tính khi bạn bấm dùng thử
+• Hết 14 ngày nếu chưa mở khóa: chỉ còn lịch âm dương; dữ liệu bạn nhập vẫn được giữ và xuất sao lưu được
+
 Nhắc ngày giỗ, sinh nhật, kỷ niệm
 • Nhập ngày giỗ theo âm lịch, app tự đổi sang dương lịch mỗi năm
 • Tự tính "giỗ lần thứ mấy", "tròn bao nhiêu tuổi"
@@ -57,6 +60,7 @@ AN TOÀN VÀ RIÊNG TƯ
 • Không quảng cáo, không thu thập dữ liệu, không cần tài khoản
 • Dữ liệu lưu trên máy của bạn
 • Đã mua thì dùng mãi, khôi phục được khi cài lại hoặc đổi máy cùng tài khoản Google
+• Ngày bắt đầu dùng thử được lưu trên máy (và trong sao lưu của Android nếu bạn bật sao lưu), không gửi cho tác giả
 
 Tác giả: BS. Trịnh Kế An. Góp ý: bstrinhkean@gmail.com
 ```
@@ -84,7 +88,7 @@ Nên chụp thêm 1–2 ảnh màn hình chính có tiện ích Lịch tháng t�
 | Chính sách quyền riêng tư | Dán URL công khai của `docs/chinh-sach-quyen-rieng-tu.html` |
 | Quyền truy cập ứng dụng (App access) | **Mọi chức năng đều dùng được mà không cần đăng nhập**; phần trả phí mở bằng giao dịch trong ứng dụng, người duyệt có thể mua thử bằng tài khoản kiểm thử giấy phép |
 | Quảng cáo | **Không**, ứng dụng không chứa quảng cáo |
-| Ứng dụng có giao dịch mua trong ứng dụng | **Có**: một sản phẩm mua một lần "Bản Đầy Đủ" (xem `store/huong-dan-ban-ban-day-du.md`) |
+| Ứng dụng có giao dịch mua trong ứng dụng | **Có**: một sản phẩm mua một lần "Bản Đầy Đủ" kèm 14 ngày dùng thử miễn phí do ứng dụng tự tính (xem `store/huong-dan-ban-ban-day-du.md`) |
 | Mã nhận dạng quảng cáo (Advertising ID) | **Không** sử dụng |
 | Xếp hạng nội dung | Danh mục **Tiện ích, Năng suất, Giao tiếp hoặc Khác** (Utility, Productivity…); trả lời **Không** cho mọi câu về bạo lực, tình dục, ngôn ngữ, chất kích thích, cờ bạc, nội dung do người dùng tạo chia sẻ công khai; câu hỏi về mua hàng kỹ thuật số: **Có** (mở khóa tính năng trong ứng dụng) |
 | Đối tượng mục tiêu | **18 tuổi trở lên**; không thu hút trẻ em |
@@ -105,12 +109,12 @@ Nên chụp thêm 1–2 ảnh màn hình chính có tiện ích Lịch tháng t�
 | Mục | Giá trị |
 |---|---|
 | Tệp tải lên | Tệp `.aab` lấy từ GitHub Actions "Build Play AAB" (có thanh toán Google Play). **Không** dùng `dist/SoTayLichViet-dung-thu.apk` |
-| Tên bản phát hành | `1.0 (9)` (số trong ngoặc = mã phiên bản, nhập khi chạy workflow) |
+| Tên bản phát hành | `1.0 (10)` (số trong ngoặc = mã phiên bản, nhập khi chạy workflow) |
 | Ghi chú phát hành (vi-VN) | xem bên dưới |
 
 ```
 <vi-VN>
-Phiên bản đầu tiên: lịch âm dương miễn phí; Bản Đầy Đủ (mua một lần) mở nhắc giỗ và sinh nhật, sổ hiếu hỷ, chi tiêu có khóa PIN/vân tay, ghi chú, tiện ích màn hình chính, tự lưu vào Google Drive.
+Phiên bản đầu tiên: lịch âm dương miễn phí; dùng thử miễn phí 14 ngày đủ tính năng, sau đó Bản Đầy Đủ (mua một lần) mở nhắc giỗ và sinh nhật, sổ hiếu hỷ, chi tiêu có khóa PIN/vân tay, ghi chú, tiện ích màn hình chính, tự lưu vào Google Drive.
 </vi-VN>
 ```
 

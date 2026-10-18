@@ -24,6 +24,7 @@ import java.util.Locale;
 public class Reminders extends BroadcastReceiver {
     static final String CHANNEL = "nhac-ngay";
     static final String ACTION_FIRE = "vn.sotay.lichviet.NHAC";
+    static final String ACTION_TRIAL_END = "vn.sotay.lichviet.HET_DUNG_THU";
 
     static SharedPreferences prefs(Context c) {
         return c.getSharedPreferences("sotay", Context.MODE_PRIVATE);
@@ -32,8 +33,10 @@ public class Reminders extends BroadcastReceiver {
     @Override
     public void onReceive(Context c, Intent intent) {
         postToday(c, ACTION_FIRE.equals(intent.getAction()));
+        postTrialNotices(c);
         scheduleNext(c);
-        Widgets.refreshAll(c);
+        // Hết hạn dùng thử (hoặc mới mua): dựng lại tiện ích để khóa/mở đúng trạng thái.
+        Widgets.rebuildAll(c);
     }
 
     static String todayKey() {
@@ -66,6 +69,64 @@ public class Reminders extends BroadcastReceiver {
         p.edit().putString("last", today).apply();
     }
 
+    /** Số ngày nhớ của người dùng (không tính ngày lễ) rơi trong "days" ngày tới, đọc từ danh sách lời nhắc đã lưu. */
+    static int upcomingEvents(Context c, int days) {
+        String list = prefs(c).getString("list", null);
+        if (list == null) return 0;
+        Calendar k = Calendar.getInstance();
+        k.add(Calendar.DAY_OF_MONTH, days);
+        String limit = String.format(Locale.US, "%04d-%02d-%02d", k.get(Calendar.YEAR), k.get(Calendar.MONTH) + 1, k.get(Calendar.DAY_OF_MONTH));
+        String today = todayKey();
+        int n = 0;
+        try {
+            JSONArray arr = new JSONArray(list);
+            for (int i = 0; i < arr.length(); i++) {
+                JSONObject o = arr.getJSONObject(i);
+                String d = o.optString("date");
+                if (o.optString("title").startsWith("Hôm nay: ") && d.compareTo(today) >= 0 && d.compareTo(limit) <= 0) n++;
+            }
+        } catch (Exception ignored) {
+        }
+        return n;
+    }
+
+    /**
+     * Báo trước khi hết dùng thử (còn 2 ngày) và báo khi đã hết, mỗi loại một lần. Không báo nếu đã mua.
+     * Báo trước để người dùng không bị mất nhắc ngày giỗ mà không hay biết.
+     */
+    static void postTrialNotices(Context c) {
+        if (Pro.purchased(c) || Pro.trialStart(c) <= 0) return;
+        SharedPreferences t = Pro.tprefs(c);
+        if (Pro.trialActive(c)) {
+            int left = Pro.trialLeftDays(c);
+            if (left <= 2 && !t.getBoolean("trialWarn", false)) {
+                int n = upcomingEvents(c, 30);
+                String text = (n > 0 ? "Có " + n + " ngày nhớ trong 30 ngày tới sẽ không được nhắc nếu bạn chưa mở khóa. " : "Sau đó nhắc ngày, chi tiêu, ghi chú sẽ bị khóa. ")
+                        + "Dữ liệu của bạn vẫn được giữ. Mở khóa một lần, 20.000đ.";
+                post(c, 200, "Còn " + left + " ngày dùng thử Bản Đầy Đủ", text, NotesWidget.paywallIntent(c));
+                t.edit().putBoolean("trialWarn", true).apply();
+            }
+        } else if (!t.getBoolean("trialEnd", false)) {
+            post(c, 201, "Đã hết thời gian dùng thử",
+                    "Nhắc ngày, chi tiêu, ghi chú đã tắt. Lịch âm dương vẫn dùng bình thường và dữ liệu của bạn vẫn được giữ. Mở khóa 20.000đ để dùng tiếp.",
+                    NotesWidget.paywallIntent(c));
+            t.edit().putBoolean("trialEnd", true).apply();
+        }
+    }
+
+    /** Đặt báo thức đúng lúc hết dùng thử để khóa tiện ích ngay, không phải chờ lần báo kế tiếp. */
+    static void scheduleTrialEnd(Context c) {
+        long s = Pro.trialStart(c);
+        if (s <= 0 || Pro.purchased(c)) return;
+        long at = s + Pro.TRIAL_DAYS * Pro.DAY + 1000;
+        if (at <= System.currentTimeMillis()) return;
+        AlarmManager am = c.getSystemService(AlarmManager.class);
+        if (am == null) return;
+        Intent i = new Intent(c, Reminders.class).setAction(ACTION_TRIAL_END);
+        PendingIntent pi = PendingIntent.getBroadcast(c, 2, i, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
+        am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi);
+    }
+
     static void createChannel(Context c) {
         NotificationManager nm = c.getSystemService(NotificationManager.class);
         if (nm == null) return;
@@ -75,10 +136,13 @@ public class Reminders extends BroadcastReceiver {
     }
 
     static void post(Context c, int id, String title, String text) {
+        post(c, id, title, text, new Intent(c, MainActivity.class)
+                .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP));
+    }
+
+    static void post(Context c, int id, String title, String text, Intent open) {
         createChannel(c);
-        Intent open = new Intent(c, MainActivity.class)
-                .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        PendingIntent pi = PendingIntent.getActivity(c, 0, open,
+        PendingIntent pi = PendingIntent.getActivity(c, id, open,
                 PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
         Notification n = new Notification.Builder(c, CHANNEL)
                 .setSmallIcon(R.drawable.ic_notify)
@@ -113,5 +177,6 @@ public class Reminders extends BroadcastReceiver {
         if (am == null) return;
         // Báo thức không cần chính xác tới từng phút nên không dùng quyền báo thức chính xác (bị CH Play hạn chế).
         am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi);
+        scheduleTrialEnd(c);
     }
 }

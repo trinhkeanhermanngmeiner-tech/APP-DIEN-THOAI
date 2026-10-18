@@ -175,7 +175,11 @@ public class MainActivity extends Activity {
         Billing b = Billing.get(this);
         org.json.JSONObject o = new org.json.JSONObject();
         try {
-            o.put("pro", Pro.isPro(this)).put("price", b.price()).put("err", b.error())
+            o.put("pro", Pro.isPro(this)).put("purchased", Pro.purchased(this))
+                    .put("trialStart", Pro.trialStart(this)).put("trialDays", Pro.TRIAL_DAYS)
+                    .put("trialActive", Pro.trialActive(this)).put("trialLeft", Pro.trialLeftDays(this))
+                    .put("trialUsed", Pro.trialStart(this) > 0)
+                    .put("price", b.price()).put("err", b.error())
                     .put("dev", BuildInfo.DEV).put("store", b.available());
         } catch (Exception ignored) {
         }
@@ -285,6 +289,7 @@ public class MainActivity extends Activity {
         super.onResume();
         // Ghi chú có thể vừa được sửa từ tiện ích: nạp lại dữ liệu vào giao diện.
         Billing.get(this).connect(this);
+        if (pageReady) sendPro(); // số ngày dùng thử có thể đã đổi trong lúc app ở nền
         long ext = Reminders.prefs(this).getLong("extWrite", 0);
         if (ext != seenExtWrite) {
             seenExtWrite = ext;
@@ -546,6 +551,49 @@ public class MainActivity extends Activity {
         @JavascriptInterface
         public String proInfo() {
             return MainActivity.this.proInfo();
+        }
+
+        /** Bắt đầu 14 ngày dùng thử (một lần). Trả về true nếu vừa bắt đầu. */
+        @JavascriptInterface
+        public boolean startTrial() {
+            boolean ok = Pro.startTrial(MainActivity.this);
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    sendPro();
+                }
+            });
+            return ok;
+        }
+
+        /** Gộp ngày bắt đầu dùng thử đọc từ bản sao lưu (lấy ngày sớm nhất). Tham số là số mili giây dạng chuỗi. */
+        @JavascriptInterface
+        public boolean mergeTrial(String startMillis) {
+            long v;
+            try {
+                v = Long.parseLong(startMillis.trim());
+            } catch (Exception e) {
+                return false;
+            }
+            boolean ok = Pro.mergeTrial(MainActivity.this, v);
+            if (ok) runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    sendPro();
+                }
+            });
+            return ok;
+        }
+
+        @JavascriptInterface
+        public void devResetTrial() {
+            Pro.devResetTrial(MainActivity.this);
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    sendPro();
+                }
+            });
         }
 
         @JavascriptInterface
